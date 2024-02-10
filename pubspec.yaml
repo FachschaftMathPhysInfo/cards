@@ -38,6 +38,8 @@ dependencies:
   flip_card: ^0.7.0
   flutter_widget_from_html: ^0.14.11
   mongo_dart: ^0.10.0
+  mockito: ^5.4.4
+  graphql_flutter: ^5.1.2
 
 dev_dependencies:
   flutter_test:

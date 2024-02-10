@@ -1,0 +1,27 @@
+scalar Upload
+
+type Deck {
+  _id: String!
+  module: String!
+  moduleAlt: String
+  examiners: String
+  semester: String
+  downloadUrl: String!
+}
+
+type Query {
+  decks: [Deck!]!
+  getDeck(id: String!): Deck
+}
+
+input NewDeck {
+  module: String!
+  moduleAlt: String
+  examiners: String
+  semester: String
+  file: Upload!
+}
+
+type Mutation {
+  createDeck(input: NewDeck!): Deck!
+}
