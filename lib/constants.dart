@@ -17,12 +17,26 @@ class Strings {
   static const String module = "Modul";
   static const String prof = "Prof.";
   static const String semester = "Semester";
-  static const String cards = "Karten";
+  static const String size = "Größe";
   static const String options = "Optionen";
+
+  static const String nothingFound = "Keine Karten gefunden";
 }
 
-class MongoDB {
-  MongoDB._();
-  static const String mongoUri = "mongodb://localhost:27017/cards";
-  static const String deckCollection = "cardDecks";
+class GraphQL {
+  GraphQL._();
+  static const String httpLink = "http://localhost:8080/";
+
+  static const String fetchDecks = """
+    query {
+      decks {
+        module
+        moduleAlt
+        examiners
+        semester
+        downloadUri
+      }
+    }
+  """;
+  static const String createDeck = "";
 }
