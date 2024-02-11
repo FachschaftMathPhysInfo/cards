@@ -2,11 +2,13 @@ scalar Upload
 
 type Deck {
   _id: String!
+  subject: String!
   module: String!
   moduleAlt: String
   examiners: String
   semester: String
-  downloadUrl: String!
+  year: Int
+  hash: String!
 }
 
 type Query {
@@ -15,10 +17,12 @@ type Query {
 }
 
 input NewDeck {
+  subject: String!
   module: String!
   moduleAlt: String
   examiners: String
   semester: String
+  year: Int
   file: Upload!
 }
 
