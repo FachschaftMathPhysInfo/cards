@@ -71,13 +71,26 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 func (r *queryResolver) Decks(ctx context.Context) ([]*model.Deck, error) {
 	cardDecks := r.DB.Collection("cardDecks")
 
-	var deck []*model.Deck
-	_, searchErr := cardDecks.Find(context.Background(), &deck)
+	filter := bson.D{{}}
+	cursor, searchErr := cardDecks.Find(context.Background(), filter)
 	if searchErr != nil {
 		return nil, searchErr
 	}
+	defer cursor.Close(context.Background())
 
-	return deck, nil
+	var decks []*model.Deck
+	for cursor.Next(context.Background()) {
+		var deck *model.Deck
+		if err := cursor.Decode(&deck); err != nil {
+			return nil, err
+		}
+		decks = append(decks, deck)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return decks, nil
 }
 
 // GetDeck is the resolver for the getDeck field.

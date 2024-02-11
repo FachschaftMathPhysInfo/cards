@@ -18,23 +18,28 @@ class Strings {
   static const String prof = "Prof.";
   static const String semester = "Semester";
   static const String size = "Größe";
+  static const String language = "Sprache";
   static const String options = "Optionen";
 
   static const String nothingFound = "Keine Karten gefunden";
+  static const String error =
+      "Ein interner Fehler ist aufgetreten.\nBitte kontaktiere <mail@dheidemann.de>.";
 }
 
 class GraphQL {
   GraphQL._();
-  static const String httpLink = "http://localhost:8080/";
+  static const String httpLink = "http://localhost:8080/graphql";
 
   static const String fetchDecks = """
     query {
       decks {
+        _id
+        subject
         module
         moduleAlt
         examiners
         semester
-        downloadUrl
+        year
       }
     }
   """;
