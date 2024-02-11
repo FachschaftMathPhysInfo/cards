@@ -2,25 +2,33 @@
 
 package model
 
+import (
+	"github.com/99designs/gqlgen/graphql"
+)
+
+type Deck struct {
+	ID        string  `json:"_id"`
+	Subject   string  `json:"subject"`
+	Module    string  `json:"module"`
+	ModuleAlt *string `json:"moduleAlt,omitempty"`
+	Examiners *string `json:"examiners,omitempty"`
+	Semester  *string `json:"semester,omitempty"`
+	Year      *int    `json:"year,omitempty"`
+	Hash      string  `json:"hash"`
+}
+
 type Mutation struct {
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type NewDeck struct {
+	Subject   string         `json:"subject"`
+	Module    string         `json:"module"`
+	ModuleAlt *string        `json:"moduleAlt,omitempty"`
+	Examiners *string        `json:"examiners,omitempty"`
+	Semester  *string        `json:"semester,omitempty"`
+	Year      *int           `json:"year,omitempty"`
+	File      graphql.Upload `json:"file"`
 }
 
 type Query struct {
-}
-
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
-}
-
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
 }

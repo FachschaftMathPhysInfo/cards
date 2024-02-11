@@ -34,7 +34,7 @@ class GraphQL {
         moduleAlt
         examiners
         semester
-        downloadUri
+        downloadUrl
       }
     }
   """;

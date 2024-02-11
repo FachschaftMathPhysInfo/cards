@@ -1,4 +1,5 @@
 import 'package:cards/views/colored_icon_button.dart';
+import 'package:cards/views/deck_table_title.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -46,7 +47,7 @@ class DeckSelectionMenu extends StatelessWidget {
                       DataCell(Row(
                         children: [
                           ColoredIconButton(
-                              Icon(Icons.download), c.Colors.orange)
+                              Icon(Icons.download), c.Colors.orange, () {})
                         ],
                       ))
                     ]);
@@ -54,20 +55,5 @@ class DeckSelectionMenu extends StatelessWidget {
                 ),
               );
             }));
-  }
-}
-
-class DeckTableTitle extends StatelessWidget {
-  final String text;
-  const DeckTableTitle({required this.text, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Text(
-        text,
-        style: const TextStyle(fontStyle: FontStyle.italic),
-      ),
-    );
   }
 }
