@@ -14,6 +14,7 @@ import (
 	"log"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -43,12 +44,15 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 	filter := bson.D{{Key: "hash", Value: encodedHash}}
 	searchRes := cardDecks.FindOne(context.Background(), filter).Decode(&dbDeck)
 	if searchRes != mongo.ErrNoDocuments {
-		return nil, fmt.Errorf("Deck already exists")
+		return nil, fmt.Errorf("Deck \"%s\" already exists", input.File.Filename)
 	}
+
+	// create new uuid
+	deckUUID := uuid.New()
 
 	// map the GraphQL input to the model
 	deck := model.Deck{
-		ID:        dbDeck.ID,
+		ID:        deckUUID.String(),
 		Subject:   input.Subject,
 		Module:    input.Module,
 		ModuleAlt: input.ModuleAlt,
@@ -63,6 +67,8 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 	if insertErr != nil {
 		return nil, insertErr
 	}
+
+	// TODO upload file to storage
 
 	return &deck, nil
 }

@@ -15,20 +15,33 @@ class Strings {
   static const String cardNotKnown = "Repeat card.";
 
   static const String module = "Modul";
-  static const String prof = "Prof.";
+  static const String moduleAlt = "Kurzform";
+  static const String prof = "Dozent";
   static const String semester = "Semester";
+  static const String year = "Jahr";
   static const String size = "Größe";
   static const String language = "Sprache";
   static const String options = "Optionen";
+  static const String subject = "Thema";
 
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =
       "Ein interner Fehler ist aufgetreten.\nBitte kontaktiere <mail@dheidemann.de>.";
+
+  static const String contributeDeck = "Kartendeck einreichen";
+  static const String submit = "Einreichen";
+  static const String upload = "Datei hochladen";
+  static const String wise = "WiSe";
+  static const String sose = "SoSe";
+  static const String moduleAltHelper = "z.B. AlDa";
+  static const String userConstent =
+      "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten von der Fachschaft MathPhysInfo verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
 }
 
 class GraphQL {
   GraphQL._();
   static const String httpLink = "http://localhost:8080/graphql";
+  static const String deckStoragePath = "/storage/paths"; // no trailing slash
 
   static const String fetchDecks = """
     query {
@@ -43,5 +56,11 @@ class GraphQL {
       }
     }
   """;
-  static const String createDeck = "";
+  static const String createDeck = """
+    mutation CreateDeck(\$input: NewDeck!) {
+      createDeck(input: \$input) {
+        module
+      }
+    }
+  """;
 }
