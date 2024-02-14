@@ -1,11 +1,11 @@
 scalar Upload
 
 type Deck {
-  _id: String!
-  subject: String!
+  subject: String
   module: String!
   moduleAlt: String
   examiners: String
+  language: String
   semester: String
   year: Int
   hash: String!
@@ -13,14 +13,15 @@ type Deck {
 
 type Query {
   decks: [Deck!]!
-  getDeck(id: String!): Deck
+  getDeck(hash: String!): Deck
 }
 
 input NewDeck {
-  subject: String!
+  subject: String
   module: String!
   moduleAlt: String
   examiners: String
+  language: String
   semester: String
   year: Int
   file: Upload!
@@ -28,4 +29,5 @@ input NewDeck {
 
 type Mutation {
   createDeck(input: NewDeck!): Deck!
+  deleteDeck(hash: String!): String
 }

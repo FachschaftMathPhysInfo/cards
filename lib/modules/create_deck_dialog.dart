@@ -1,5 +1,6 @@
-import 'dart:io';
-
+import 'package:cards/main.dart';
+import 'package:cards/views/simple_alert.dart';
+import "package:http/http.dart";
 import 'package:cards/views/colored_dropdown_menu.dart';
 import 'package:cards/views/filled_text_button.dart';
 import 'package:cards/views/simple_textfield.dart';
@@ -20,19 +21,92 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
   final TextEditingController moduleAltController = TextEditingController();
   final TextEditingController subjectController = TextEditingController();
   final TextEditingController examinersController = TextEditingController();
-  late File deckFile;
-  DateTime selectedDate = DateTime.now();
+  String selectedYear = DateTime.now().year.toString();
+  String selectedSemester =
+      DateTime.now().month >= 10 || DateTime.now().month <= 3
+          ? c.Strings.wise
+          : c.Strings.sose;
 
   FilePickerResult? _deckFileResult;
+  bool _isReady = true;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(c.Strings.contributeDeck),
+      actions: [
+        Mutation(
+            options: MutationOptions(
+              document: gql(c.GraphQL.createDeck),
+              onError: (OperationException? error) {
+                simpleAlert(context, c.Strings.error);
+                logflob.shout(error.toString());
+              },
+              onCompleted: (dynamic resultData) {
+                Navigator.of(context).pop();
+                simpleAlert(context, c.Strings.uploadSuccessMessage);
+                logflob.info("$resultData created");
+              },
+            ),
+            builder:
+                (RunMutation createDeckMutation, QueryResult? createResult) {
+              createDeck() {
+                final selectedDeck = MultipartFile.fromBytes(
+                    "", _deckFileResult!.files.single.bytes!,
+                    filename: _deckFileResult!.files.single.name);
+                createDeckMutation({
+                  "input": {
+                    "subject": subjectController.text,
+                    "module": moduleController.text,
+                    "moduleAlt": moduleAltController.text,
+                    "examiners": examinersController.text,
+                    "semester": selectedSemester,
+                    "year": int.parse(selectedYear),
+                    "file": selectedDeck
+                  }
+                });
+              }
+
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: createResult!.isNotLoading
+                    ? FilledTextButton(
+                        text: c.Strings.submit,
+                        bgColor: c.Colors.turquoiseDark,
+                        fgColor: Colors.white,
+                        onPressed: _isReady
+                            ? () {
+                                createDeck();
+                              }
+                            : null)
+                    : const CircularProgressIndicator(),
+              );
+            })
+      ],
+      title: Row(
+        children: [
+          const Expanded(child: Text(c.Strings.contributeDeck)),
+          IconButton(
+              onPressed: () {
+                if (moduleController.text.isNotEmpty ||
+                    moduleAltController.text.isNotEmpty ||
+                    subjectController.text.isNotEmpty ||
+                    examinersController.text.isNotEmpty ||
+                    _deckFileResult != null) {
+                  simpleAlert(context, c.Strings.leaveDialog, () {
+                    Navigator.of(context).pop();
+                  });
+                } else {
+                  Navigator.of(context).pop();
+                }
+              },
+              icon: const Icon(Icons.close))
+        ],
+      ),
       content: Builder(builder: (context) {
         return Flexible(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
             child: SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
@@ -69,103 +143,68 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       const Text(c.Strings.semester),
                       const SizedBox(width: 10),
                       ColoredDropdownMenu(
+                        initDropdownValue: selectedSemester,
                         list: const [c.Strings.sose, c.Strings.wise],
-                        initDropdownValue: DateTime.now().month >= 10 ||
-                                DateTime.now().month <= 3
-                            ? 1
-                            : 0,
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Text(c.Strings.year),
-                      const SizedBox(
-                        width: 10,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedSemester = value!;
+                          });
+                        },
                       ),
-                      FilledTextButton(
-                        onPressed: () => showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              content: SizedBox(
-                                width: 300,
-                                height: 300,
-                                child: YearPicker(
-                                  firstDate:
-                                      DateTime(DateTime.now().year - 100, 1),
-                                  lastDate: DateTime(DateTime.now().year),
-                                  selectedDate: selectedDate,
-                                  onChanged: (DateTime dateTime) {
-                                    setState(() {
-                                      selectedDate = dateTime;
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        text: selectedDate.year.toString(),
-                        bgColor: c.Colors.turquoiseLight,
-                        fgColor: Colors.white,
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      if (_deckFileResult == null) ...{
-                        FilledTextButton(
-                            text: c.Strings.upload,
-                            bgColor: c.Colors.turquoiseLight,
-                            fgColor: Colors.white,
-                            onPressed: () async {
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                      type: FileType.custom,
-                                      allowedExtensions: ["apkg", "colpkg"]);
-                              if (result != null) {
-                                setState(() {
-                                  _deckFileResult = result;
-                                });
-                              }
-                            }),
-                      } else ...{
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          style: IconButton.styleFrom(
-                              foregroundColor: c.Colors.red),
-                          onPressed: () {
+                      Expanded(child: Container()),
+                      const Text(c.Strings.year),
+                      const SizedBox(width: 10),
+                      ColoredDropdownMenu(
+                          list: List.generate(
+                              15, (i) => (DateTime.now().year - i).toString()),
+                          initDropdownValue: selectedYear,
+                          onChanged: (String? value) {
                             setState(() {
-                              _deckFileResult = null;
+                              selectedYear = value!;
                             });
-                          },
-                        ),
-                        Text(_deckFileResult!.files.single.name),
-                      }
+                          })
                     ],
                   ),
-                  Expanded(child: Container()),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_deckFileResult == null) ...{
+                          FilledTextButton(
+                              text: c.Strings.upload,
+                              bgColor: c.Colors.turquoiseLight,
+                              fgColor: Colors.white,
+                              onPressed: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                        type: FileType.custom,
+                                        allowedExtensions: ["apkg", "colpkg"]);
+                                if (result != null) {
+                                  setState(() {
+                                    _deckFileResult = result;
+                                  });
+                                }
+                              }),
+                        } else ...{
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            style: IconButton.styleFrom(
+                                foregroundColor: c.Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                _deckFileResult = null;
+                              });
+                            },
+                          ),
+                          Text(_deckFileResult!.files.single.name),
+                        }
+                      ],
+                    ),
+                  ),
                   const Text(
                     c.Strings.userConstent,
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: 50,
-                    child: FilledTextButton(
-                        text: c.Strings.submit,
-                        bgColor: c.Colors.turquoiseDark,
-                        fgColor: Colors.white,
-                        onPressed: () {
-                          _performMutation(context);
-                          Navigator.pop(context);
-                        }),
-                  )
                 ],
               ),
             ),
@@ -173,19 +212,5 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
         );
       }),
     );
-  }
-
-  void _performMutation(BuildContext context) async {
-    final MutationOptions deckOptions =
-        MutationOptions(document: gql(c.GraphQL.createDeck), variables: {
-      "input": {
-        "subject": subjectController.text,
-        "module": moduleController.text,
-        "moduleAlt": moduleAltController.text,
-        "examiners": examinersController.text,
-        "year": selectedDate.year,
-        "file": deckFile
-      }
-    });
   }
 }

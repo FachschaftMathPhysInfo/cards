@@ -14,7 +14,6 @@ import (
 	"log"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -47,16 +46,13 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 		return nil, fmt.Errorf("Deck \"%s\" already exists", input.File.Filename)
 	}
 
-	// create new uuid
-	deckUUID := uuid.New()
-
 	// map the GraphQL input to the model
 	deck := model.Deck{
-		ID:        deckUUID.String(),
 		Subject:   input.Subject,
 		Module:    input.Module,
 		ModuleAlt: input.ModuleAlt,
 		Examiners: input.Examiners,
+		Language:  input.Language,
 		Semester:  input.Semester,
 		Year:      input.Year,
 		Hash:      encodedHash,
@@ -71,6 +67,20 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 	// TODO upload file to storage
 
 	return &deck, nil
+}
+
+// DeleteDeck is the resolver for the deleteDeck field.
+func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string, error) {
+	cardDecks := r.DB.Collection("cardDecks")
+	filter := bson.D{{Key: "hash", Value: hash}}
+	res, _ := cardDecks.DeleteOne(ctx, filter)
+	if res.DeletedCount == 0 {
+		return nil, fmt.Errorf("Nothing found to be deleted. Hash: %s", hash)
+	}
+
+	// TODO remove deck from storage
+
+	return &hash, nil
 }
 
 // Decks is the resolver for the decks field.
@@ -100,7 +110,7 @@ func (r *queryResolver) Decks(ctx context.Context) ([]*model.Deck, error) {
 }
 
 // GetDeck is the resolver for the getDeck field.
-func (r *queryResolver) GetDeck(ctx context.Context, id string) (*model.Deck, error) {
+func (r *queryResolver) GetDeck(ctx context.Context, hash string) (*model.Deck, error) {
 	panic("unimplemented")
 }
 
@@ -112,15 +122,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *deckResolver) UUID(ctx context.Context, obj *model.Deck) (string, error) {
-	return obj.ID, nil
-}
-
-type deckResolver struct{ *Resolver }

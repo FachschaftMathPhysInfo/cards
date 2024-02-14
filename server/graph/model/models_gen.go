@@ -7,11 +7,11 @@ import (
 )
 
 type Deck struct {
-	ID        string  `json:"_id"`
-	Subject   string  `json:"subject"`
+	Subject   *string `json:"subject,omitempty"`
 	Module    string  `json:"module"`
 	ModuleAlt *string `json:"moduleAlt,omitempty"`
 	Examiners *string `json:"examiners,omitempty"`
+	Language  *string `json:"language,omitempty"`
 	Semester  *string `json:"semester,omitempty"`
 	Year      *int    `json:"year,omitempty"`
 	Hash      string  `json:"hash"`
@@ -21,10 +21,11 @@ type Mutation struct {
 }
 
 type NewDeck struct {
-	Subject   string         `json:"subject"`
+	Subject   *string        `json:"subject,omitempty"`
 	Module    string         `json:"module"`
 	ModuleAlt *string        `json:"moduleAlt,omitempty"`
 	Examiners *string        `json:"examiners,omitempty"`
+	Language  *string        `json:"language,omitempty"`
 	Semester  *string        `json:"semester,omitempty"`
 	Year      *int           `json:"year,omitempty"`
 	File      graphql.Upload `json:"file"`
