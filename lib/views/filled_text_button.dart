@@ -4,7 +4,7 @@ class FilledTextButton extends StatelessWidget {
   final String text;
   final Color bgColor;
   final Color fgColor;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   const FilledTextButton(
       {required this.text,
       required this.bgColor,

@@ -41,6 +41,8 @@ dependencies:
   mockito: ^5.4.4
   graphql_flutter: ^5.1.2
   file_picker: ^6.1.1
+  http: ^1.2.0
+  logging: ^1.2.0
 
 dev_dependencies:
   flutter_test:

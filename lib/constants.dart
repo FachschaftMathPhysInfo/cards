@@ -26,33 +26,43 @@ class Strings {
 
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =
-      "Ein interner Fehler ist aufgetreten.\nBitte kontaktiere <mail@dheidemann.de>.";
+      "Ugh, ein interner Fehler.\nBitte kontaktiere <root@mathphys.info>.";
 
-  static const String contributeDeck = "Kartendeck einreichen";
+  static const String contributeDeck = "Deck einreichen";
   static const String submit = "Einreichen";
   static const String upload = "Datei hochladen";
   static const String wise = "WiSe";
   static const String sose = "SoSe";
   static const String moduleAltHelper = "z.B. AlDa";
   static const String userConstent =
-      "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten von der Fachschaft MathPhysInfo verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
+      "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten durch die Fachschaft MathPhysInfo der Uni Heidelberg verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
+
+  static const String okay = "Okay";
+  static const String yes = "Ja";
+  static const String cancel = "Abbrechen";
+  static const String discardChanges = "Änderungen verwerfen";
+  static const String leaveDialog = "Sicher? Alle Änderungen gehen verloren.";
+  static const String uploadSuccessMessage =
+      "Danke!\nWir geben das Deck so bald wie möglich frei.";
+  static const String goingToBeDeleted = "wird gelöscht!";
 }
 
 class GraphQL {
   GraphQL._();
   static const String httpLink = "http://localhost:8080/graphql";
-  static const String deckStoragePath = "/storage/paths"; // no trailing slash
+  static const String deckStoragePath = "/storage/decks"; // no trailing slash
 
   static const String fetchDecks = """
     query {
       decks {
-        _id
         subject
         module
         moduleAlt
         examiners
+        language
         semester
         year
+        hash
       }
     }
   """;
@@ -61,6 +71,11 @@ class GraphQL {
       createDeck(input: \$input) {
         module
       }
+    }
+  """;
+  static const String deleteDeck = """
+    mutation DeleteDeck(\$hash: String!) {
+      deleteDeck(hash: \$hash)
     }
   """;
 }
