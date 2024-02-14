@@ -13,7 +13,6 @@ type Deck {
 
 type Query {
   decks: [Deck!]!
-  getDeck(hash: String!): Deck
 }
 
 input NewDeck {

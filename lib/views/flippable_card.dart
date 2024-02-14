@@ -32,9 +32,6 @@ class FlippableCard extends StatelessWidget {
           direction: FlipDirection.HORIZONTAL,
           side: CardSide.FRONT,
           speed: 300,
-          onFlipDone: (status) {
-            print(status);
-          },
           front: HTMLContainer(front),
           back: HTMLContainer(back)),
     );

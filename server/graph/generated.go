@@ -49,6 +49,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Deck struct {
 		Examiners func(childComplexity int) int
+		FileType  func(childComplexity int) int
 		Hash      func(childComplexity int) int
 		Language  func(childComplexity int) int
 		Module    func(childComplexity int) int
@@ -64,8 +65,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Decks   func(childComplexity int) int
-		GetDeck func(childComplexity int, hash string) int
+		Decks func(childComplexity int) int
 	}
 }
 
@@ -75,7 +75,6 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Decks(ctx context.Context) ([]*model.Deck, error)
-	GetDeck(ctx context.Context, hash string) (*model.Deck, error)
 }
 
 type executableSchema struct {
@@ -103,6 +102,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Deck.Examiners(childComplexity), true
+
+	case "Deck.fileType":
+		if e.complexity.Deck.FileType == nil {
+			break
+		}
+
+		return e.complexity.Deck.FileType(childComplexity), true
 
 	case "Deck.hash":
 		if e.complexity.Deck.Hash == nil {
@@ -183,18 +189,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Decks(childComplexity), true
-
-	case "Query.getDeck":
-		if e.complexity.Query.GetDeck == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getDeck_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetDeck(childComplexity, args["hash"].(string)), true
 
 	}
 	return 0, false
@@ -363,21 +357,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getDeck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["hash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["hash"] = arg0
 	return args, nil
 }
 
@@ -753,6 +732,47 @@ func (ec *executionContext) fieldContext_Deck_hash(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Deck_fileType(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Deck_fileType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FileType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Deck_fileType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Deck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDeck(ctx, field)
 	if err != nil {
@@ -808,6 +828,8 @@ func (ec *executionContext) fieldContext_Mutation_createDeck(ctx context.Context
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
+			case "fileType":
+				return ec.fieldContext_Deck_fileType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
@@ -933,79 +955,11 @@ func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field 
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
+			case "fileType":
+				return ec.fieldContext_Deck_fileType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getDeck(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDeck(rctx, fc.Args["hash"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Deck)
-	fc.Result = res
-	return ec.marshalODeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getDeck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "subject":
-				return ec.fieldContext_Deck_subject(ctx, field)
-			case "module":
-				return ec.fieldContext_Deck_module(ctx, field)
-			case "moduleAlt":
-				return ec.fieldContext_Deck_moduleAlt(ctx, field)
-			case "examiners":
-				return ec.fieldContext_Deck_examiners(ctx, field)
-			case "language":
-				return ec.fieldContext_Deck_language(ctx, field)
-			case "semester":
-				return ec.fieldContext_Deck_semester(ctx, field)
-			case "year":
-				return ec.fieldContext_Deck_year(ctx, field)
-			case "hash":
-				return ec.fieldContext_Deck_hash(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getDeck_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -3029,6 +2983,8 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "fileType":
+			out.Values[i] = ec._Deck_fileType(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3137,25 +3093,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getDeck":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getDeck(ctx, field)
 				return res
 			}
 
@@ -3907,13 +3844,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) marshalODeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx context.Context, sel ast.SelectionSet, v *model.Deck) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Deck(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
