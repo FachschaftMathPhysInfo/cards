@@ -50,7 +50,8 @@ class Strings {
 class GraphQL {
   GraphQL._();
   static const String httpLink = "http://localhost:8080/graphql";
-  static const String deckStoragePath = "/storage/decks"; // no trailing slash
+  static const String deckStoragePath =
+      "http://localhost:8080/deckfiles"; // no trailing slash
 
   static const String fetchDecks = """
     query {

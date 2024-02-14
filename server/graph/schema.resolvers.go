@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -59,12 +61,29 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 	}
 
 	// insert deck
-	_, insertErr := cardDecks.InsertOne(context.Background(), &deck)
-	if insertErr != nil {
-		return nil, insertErr
+	_, err := cardDecks.InsertOne(context.Background(), &deck)
+	if err != nil {
+		return nil, err
 	}
 
-	// TODO upload file to storage
+	// write file to storage
+	deckfilesPath := "./deckfiles/"
+	deckFilename := encodedHash + filepath.Ext(input.File.Filename)
+	destFile, err := os.Create(deckfilesPath + deckFilename)
+	if err != nil {
+		return nil, err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, fileBuf)
+	if err != nil {
+		return nil, err
+	}
+
+	err = destFile.Sync()
+	if err != nil {
+		return nil, err
+	}
 
 	return &deck, nil
 }
@@ -79,6 +98,11 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 	}
 
 	// TODO remove deck from storage
+	deckfilesPath := "./deckfiles/"
+	err := os.Remove(deckfilesPath + hash + ".*")
+	if err != nil {
+		return nil, err
+	}
 
 	return &hash, nil
 }
@@ -107,11 +131,6 @@ func (r *queryResolver) Decks(ctx context.Context) ([]*model.Deck, error) {
 	}
 
 	return decks, nil
-}
-
-// GetDeck is the resolver for the getDeck field.
-func (r *queryResolver) GetDeck(ctx context.Context, hash string) (*model.Deck, error) {
-	panic("unimplemented")
 }
 
 // Mutation returns MutationResolver implementation.

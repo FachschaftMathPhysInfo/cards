@@ -7,10 +7,11 @@ import 'package:cards/views/simple_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:path/path.dart' as path;
 
 downloadDeck(url, newFileName) {
   AnchorElement anchorElement = AnchorElement(href: url);
-  anchorElement.download = newFileName;
+  anchorElement.download = "$newFileName${path.extension(url)}";
   anchorElement.click();
 }
 
