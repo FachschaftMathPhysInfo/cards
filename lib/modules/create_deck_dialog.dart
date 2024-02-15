@@ -21,14 +21,16 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
   final TextEditingController moduleAltController = TextEditingController();
   final TextEditingController subjectController = TextEditingController();
   final TextEditingController examinersController = TextEditingController();
-  String selectedYear = DateTime.now().year.toString();
+
   String selectedSemester =
       DateTime.now().month >= 10 || DateTime.now().month <= 3
           ? c.Strings.wise
           : c.Strings.sose;
+  String selectedYear = DateTime.now().month <= 10
+      ? (DateTime.now().year - 1).toString()
+      : DateTime.now().year.toString();
 
   FilePickerResult? _deckFileResult;
-  bool _isReady = true;
 
   @override
   Widget build(BuildContext context) {
@@ -67,20 +69,21 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               }
 
               return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: createResult!.isNotLoading
-                    ? FilledTextButton(
-                        text: c.Strings.submit,
-                        bgColor: c.Colors.turquoiseDark,
-                        fgColor: Colors.white,
-                        onPressed: _isReady
-                            ? () {
-                                createDeck();
-                              }
-                            : null)
-                    : const CircularProgressIndicator(),
-              );
+                  width: double.infinity,
+                  height: 50,
+                  child: FilledTextButton(
+                      text: c.Strings.submit,
+                      bgColor: c.Colors.turquoiseDark,
+                      fgColor: Colors.white,
+                      onPressed: moduleController.text.isNotEmpty &&
+                              moduleAltController.text.isNotEmpty &&
+                              subjectController.text.isNotEmpty &&
+                              examinersController.text.isNotEmpty &&
+                              _deckFileResult != null
+                          ? () {
+                              createDeck();
+                            }
+                          : null));
             })
       ],
       title: Row(
@@ -122,14 +125,14 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                   SimpleTextField(
                       labelText: c.Strings.moduleAlt,
                       controller: moduleAltController,
-                      maxLength: 5,
+                      maxLength: 6,
                       helperText: c.Strings.moduleAltHelper,
-                      icon: const Icon(null)),
+                      icon: const Icon(Icons.short_text)),
                   const SizedBox(height: 10),
                   SimpleTextField(
                     labelText: c.Strings.subject,
                     controller: subjectController,
-                    icon: const Icon(Icons.subject),
+                    icon: const Icon(Icons.school),
                   ),
                   const SizedBox(height: 10),
                   SimpleTextField(
