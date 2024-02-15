@@ -8,6 +8,7 @@ Database for Anki Decks with reviewer functionality in the future
 - [x] `lib/modules/deck_selection_menu.dart` => file download: still not taking the new filename
 - [ ] search bar
 - [ ] `lib/modules/create_deck_dialog.dart` => language selection
+- [ ] `lib/modules/create_deck_dialog.dart` => field validation currently updates after a file was uploaded and not on text entry, which is bad => file upload currently has to be the last thing to do for the validation to work "properly"...
 
 ## dev
 1. get `mongodb` package and start the service
