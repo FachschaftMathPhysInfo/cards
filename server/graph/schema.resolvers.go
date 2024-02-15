@@ -97,9 +97,13 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 		return nil, fmt.Errorf("Nothing found to be deleted. Hash: %s", hash)
 	}
 
-	// TODO remove deck from storage
+	// remove deck from storage
 	deckfilesPath := "./deckfiles/"
-	err := os.Remove(deckfilesPath + hash + ".*")
+	deckfiles, err := filepath.Glob(deckfilesPath + hash + ".*")
+	if err != nil {
+		return nil, err
+	}
+	err = os.Remove(deckfiles[0])
 	if err != nil {
 		return nil, err
 	}

@@ -49,7 +49,6 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Deck struct {
 		Examiners func(childComplexity int) int
-		FileType  func(childComplexity int) int
 		Hash      func(childComplexity int) int
 		Language  func(childComplexity int) int
 		Module    func(childComplexity int) int
@@ -102,13 +101,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Deck.Examiners(childComplexity), true
-
-	case "Deck.fileType":
-		if e.complexity.Deck.FileType == nil {
-			break
-		}
-
-		return e.complexity.Deck.FileType(childComplexity), true
 
 	case "Deck.hash":
 		if e.complexity.Deck.Hash == nil {
@@ -732,47 +724,6 @@ func (ec *executionContext) fieldContext_Deck_hash(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_fileType(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Deck_fileType(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FileType, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Deck_fileType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Deck",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDeck(ctx, field)
 	if err != nil {
@@ -828,8 +779,6 @@ func (ec *executionContext) fieldContext_Mutation_createDeck(ctx context.Context
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
-			case "fileType":
-				return ec.fieldContext_Deck_fileType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
@@ -955,8 +904,6 @@ func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field 
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
-			case "fileType":
-				return ec.fieldContext_Deck_fileType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
@@ -2983,8 +2930,6 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "fileType":
-			out.Values[i] = ec._Deck_fileType(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
