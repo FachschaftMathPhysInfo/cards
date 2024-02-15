@@ -2,8 +2,11 @@
 Database for Anki Decks with reviewer functionality in the future
 
 ## todo
-- [ ] `server/graph/schema.resolvers.go` => handle file upload
-- [ ] `tools/converter.py` => extract data from anki .colpkg files and make accessible for reviewer
+- [x] `server/graph/schema.resolvers.go` => handle file upload
+- [ ] kerberos authentication
+    - [ ] admin view
+- [ ] `lib/modules/deck_selection_menu.dart` => file download: still not taking the new filename
+- [ ] search bar
 
 ## dev
 1. get `mongodb` package and start the service
