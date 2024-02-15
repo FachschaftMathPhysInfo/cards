@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ColoredDropdownMenu extends StatefulWidget {
+class SimpleDropdownMenu extends StatefulWidget {
   final List<String> list;
   final String initDropdownValue;
   final Function(String?) onChanged;
-  const ColoredDropdownMenu(
+  const SimpleDropdownMenu(
       {required this.list,
       super.key,
       required this.initDropdownValue,
       required this.onChanged});
 
   @override
-  State<ColoredDropdownMenu> createState() => _ColoredDropdownMenuState();
+  State<SimpleDropdownMenu> createState() => _SimpleDropdownMenuState();
 }
 
-class _ColoredDropdownMenuState extends State<ColoredDropdownMenu> {
+class _SimpleDropdownMenuState extends State<SimpleDropdownMenu> {
   @override
   Widget build(BuildContext context) {
     return DropdownButton(

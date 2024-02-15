@@ -11,9 +11,6 @@ class Colors {
 
 class Strings {
   Strings._();
-  static const String cardKnown = "Got it!";
-  static const String cardNotKnown = "Repeat card.";
-
   static const String module = "Modul";
   static const String moduleAlt = "Kurzform";
   static const String prof = "Dozent";
@@ -33,7 +30,7 @@ class Strings {
   static const String upload = "Datei hochladen";
   static const String wise = "WiSe";
   static const String sose = "SoSe";
-  static const String moduleAltHelper = "z.B. AlDa";
+  static const String moduleAltHelper = "z.B. LA1";
   static const String userConstent =
       "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten durch die Fachschaft MathPhysInfo der Uni Heidelberg verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
 

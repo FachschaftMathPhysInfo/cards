@@ -1,4 +1,4 @@
-import 'package:cards/modules/deck_selection_menu.dart';
+import 'package:cards/pages/deck_selection_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';

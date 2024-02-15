@@ -1,7 +1,7 @@
 import 'package:cards/main.dart';
 import 'package:cards/views/simple_alert.dart';
 import "package:http/http.dart";
-import 'package:cards/views/colored_dropdown_menu.dart';
+import 'package:cards/views/simple_dropdown_menu.dart';
 import 'package:cards/views/filled_text_button.dart';
 import 'package:cards/views/simple_textfield.dart';
 import 'package:file_picker/file_picker.dart';
@@ -26,7 +26,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
       DateTime.now().month >= 10 || DateTime.now().month <= 3
           ? c.Strings.wise
           : c.Strings.sose;
-  String selectedYear = DateTime.now().month <= 10
+  String selectedYear = DateTime.now().month < 10
       ? (DateTime.now().year - 1).toString()
       : DateTime.now().year.toString();
 
@@ -145,7 +145,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                     children: [
                       const Text(c.Strings.semester),
                       const SizedBox(width: 10),
-                      ColoredDropdownMenu(
+                      SimpleDropdownMenu(
                         initDropdownValue: selectedSemester,
                         list: const [c.Strings.sose, c.Strings.wise],
                         onChanged: (String? value) {
@@ -157,7 +157,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       Expanded(child: Container()),
                       const Text(c.Strings.year),
                       const SizedBox(width: 10),
-                      ColoredDropdownMenu(
+                      SimpleDropdownMenu(
                           list: List.generate(
                               15, (i) => (DateTime.now().year - i).toString()),
                           initDropdownValue: selectedYear,
