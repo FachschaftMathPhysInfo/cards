@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 
-class SimpleTextField extends StatelessWidget {
+class SimpleTextFormField extends StatelessWidget {
   final String labelText;
   final String helperText;
   final TextEditingController controller;
   final Icon icon;
   final bool autofocus;
   final int maxLength;
-  const SimpleTextField(
+  const SimpleTextFormField(
       {required this.labelText,
       required this.controller,
       required this.icon,
