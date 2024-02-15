@@ -13,7 +13,7 @@ class SimpleTextField extends StatelessWidget {
       required this.controller,
       required this.icon,
       this.autofocus = false,
-      this.maxLength = 20,
+      this.maxLength = 30,
       this.helperText = "",
       super.key});
 
@@ -32,8 +32,9 @@ class SimpleTextField extends StatelessWidget {
             color: Colors.grey,
           ),
           helperText: helperText != "" ? helperText : null,
-          suffixIcon: const Icon(
-            Icons.check_circle,
+          suffixIcon: const Text(
+            "*",
+            style: TextStyle(color: Colors.grey),
           ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: c.Colors.turquoiseLight),
