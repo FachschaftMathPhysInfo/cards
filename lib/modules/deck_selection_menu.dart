@@ -7,12 +7,27 @@ import 'package:cards/views/simple_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 
-downloadDeck(url, newFileName) {
-  AnchorElement anchorElement = AnchorElement(href: url);
-  anchorElement.download = "$newFileName${path.extension(url)}";
-  anchorElement.click();
+Future<void> downloadDeck(String url, String newFilename) async {
+  try {
+    http.Response response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      Uint8List bytes = response.bodyBytes;
+      Blob blob = Blob([bytes]);
+      AnchorElement anchorElement =
+          AnchorElement(href: Url.createObjectUrlFromBlob(blob));
+      anchorElement.download = "$newFilename${path.extension(url)}";
+
+      anchorElement.click();
+    } else {
+      logflob.shout('Failed to download file: ${response.statusCode}');
+    }
+  } catch (e) {
+    logflob.shout('Error downloading file: $e');
+  }
 }
 
 class DeckSelectionMenu extends StatefulWidget {

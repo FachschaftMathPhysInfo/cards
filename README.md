@@ -5,7 +5,7 @@ Database for Anki Decks with reviewer functionality in the future
 - [x] `server/graph/schema.resolvers.go` => handle file upload
 - [ ] kerberos authentication
     - [ ] admin view
-- [ ] `lib/modules/deck_selection_menu.dart` => file download: still not taking the new filename
+- [x] `lib/modules/deck_selection_menu.dart` => file download: still not taking the new filename
 - [ ] search bar
 - [ ] `lib/modules/create_deck_dialog.dart` => language selection
 
