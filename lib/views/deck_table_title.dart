@@ -9,7 +9,8 @@ class DeckTableTitle extends StatelessWidget {
     return Expanded(
       child: Text(
         text,
-        style: const TextStyle(fontStyle: FontStyle.italic),
+        style: const TextStyle(
+            fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
       ),
     );
   }

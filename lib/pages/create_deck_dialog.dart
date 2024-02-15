@@ -3,7 +3,7 @@ import 'package:cards/views/simple_alert.dart';
 import "package:http/http.dart";
 import 'package:cards/views/simple_dropdown_menu.dart';
 import 'package:cards/views/filled_text_button.dart';
-import 'package:cards/views/simple_textfield.dart';
+import 'package:cards/views/simple_text_form_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
@@ -115,27 +115,27 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
-                  SimpleTextField(
+                  SimpleTextFormField(
                     labelText: c.Strings.module,
                     controller: moduleController,
                     autofocus: true,
                     icon: const Icon(Icons.subject),
                   ),
                   const SizedBox(height: 10),
-                  SimpleTextField(
+                  SimpleTextFormField(
                       labelText: c.Strings.moduleAlt,
                       controller: moduleAltController,
                       maxLength: 6,
                       helperText: c.Strings.moduleAltHelper,
                       icon: const Icon(Icons.short_text)),
                   const SizedBox(height: 10),
-                  SimpleTextField(
+                  SimpleTextFormField(
                     labelText: c.Strings.subject,
                     controller: subjectController,
                     icon: const Icon(Icons.school),
                   ),
                   const SizedBox(height: 10),
-                  SimpleTextField(
+                  SimpleTextFormField(
                     labelText: c.Strings.prof,
                     controller: examinersController,
                     icon: const Icon(Icons.person),

@@ -21,6 +21,9 @@ class Strings {
   static const String options = "Optionen";
   static const String subject = "Thema";
 
+  static const String filter = "Filter";
+  static const String filterHintText = "Suchparameter angeben";
+
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =
       "Ugh, ein interner Fehler.\nBitte kontaktiere <root@mathphys.info>.";
