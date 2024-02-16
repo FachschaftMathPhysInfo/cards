@@ -2,13 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/FachschaftMathPhysInfo/cards/server/graph"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth"
 	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,28 +32,78 @@ func main() {
 	gqlResolvers := graph.Resolver{DB: database}
 
 	router := chi.NewRouter()
+
+	// Set up CORS
 	router.Use(cors.New(cors.Options{
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)
 
-	//
-	//	Deckfiles
-	//
+	// Initialize JWT authentication
+	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("JWT_SECRET_KEY")), nil)
 
+	// Route for user login
+	router.Get("/login/{username}", func(w http.ResponseWriter, r *http.Request) {
+		username := chi.URLParam(r, "username")
+		user := &User{Username: username}
+
+		// Create JWT token for the user
+		jwtCookie, err := createJWTCookie(user, tokenAuth)
+		if err != nil {
+			http.Error(w, "Failed to create JWT token", http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
+
+		// Set JWT token as cookie and redirect
+		http.SetCookie(w, jwtCookie)
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	})
+
+	// Serve GraphQL endpoint without authentication
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &gqlResolvers}))
+	router.Handle("/graphql", srv)
+
+	// Serve deck files
 	fileServer := http.FileServer(http.Dir("./deckfiles"))
 	router.Handle("/deckfiles/*", http.StripPrefix("/deckfiles/", fileServer))
 
-	//
-	// GraphQL
-	//
-
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &gqlResolvers}))
-
+	// Serve GraphQL playground
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	router.Handle("/graphql", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)
+	log.Printf("Connect to http://localhost:%s/ for GraphQL playground", defaultPort)
 	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
+}
+
+// User represents a user in the system
+type User struct {
+	Username string `json:"username"`
+}
+
+// createJWTCookie creates a JWT token for the given user
+func createJWTCookie(user *User, tokenAuth *jwtauth.JWTAuth) (*http.Cookie, error) {
+	userJSON, err := json.Marshal(user)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create JWT token claims
+	claims := map[string]interface{}{"user": string(userJSON)}
+	jwtauth.SetExpiryIn(claims, time.Hour)
+	_, tokenString, err := tokenAuth.Encode(claims)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create JWT token cookie
+	jwtCookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    tokenString,
+		HttpOnly: true,
+		Path:     "/",
+		Expires:  time.Now().Add(time.Hour), // Set expiration time
+	}
+
+	return jwtCookie, nil
 }

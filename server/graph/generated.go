@@ -50,6 +50,7 @@ type ComplexityRoot struct {
 	Deck struct {
 		Examiners func(childComplexity int) int
 		Hash      func(childComplexity int) int
+		IsValid   func(childComplexity int) int
 		Language  func(childComplexity int) int
 		Module    func(childComplexity int) int
 		ModuleAlt func(childComplexity int) int
@@ -61,6 +62,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateDeck func(childComplexity int, input model.NewDeck) int
 		DeleteDeck func(childComplexity int, hash string) int
+		SetValid   func(childComplexity int, hash string) int
 	}
 
 	Query struct {
@@ -71,6 +73,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error)
 	DeleteDeck(ctx context.Context, hash string) (*string, error)
+	SetValid(ctx context.Context, hash string) (*string, error)
 }
 type QueryResolver interface {
 	Decks(ctx context.Context) ([]*model.Deck, error)
@@ -108,6 +111,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Deck.Hash(childComplexity), true
+
+	case "Deck.isValid":
+		if e.complexity.Deck.IsValid == nil {
+			break
+		}
+
+		return e.complexity.Deck.IsValid(childComplexity), true
 
 	case "Deck.language":
 		if e.complexity.Deck.Language == nil {
@@ -174,6 +184,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteDeck(childComplexity, args["hash"].(string)), true
+
+	case "Mutation.setValid":
+		if e.complexity.Mutation.SetValid == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setValid_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SetValid(childComplexity, args["hash"].(string)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
@@ -323,6 +345,21 @@ func (ec *executionContext) field_Mutation_createDeck_args(ctx context.Context, 
 }
 
 func (ec *executionContext) field_Mutation_deleteDeck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["hash"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_setValid_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -724,6 +761,50 @@ func (ec *executionContext) fieldContext_Deck_hash(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Deck_isValid(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Deck_isValid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsValid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Deck_isValid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Deck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDeck(ctx, field)
 	if err != nil {
@@ -779,6 +860,8 @@ func (ec *executionContext) fieldContext_Mutation_createDeck(ctx context.Context
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
+			case "isValid":
+				return ec.fieldContext_Deck_isValid(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
@@ -849,6 +932,58 @@ func (ec *executionContext) fieldContext_Mutation_deleteDeck(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_setValid(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_setValid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SetValid(rctx, fc.Args["hash"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_setValid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_setValid_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_decks(ctx, field)
 	if err != nil {
@@ -904,6 +1039,8 @@ func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field 
 				return ec.fieldContext_Deck_year(ctx, field)
 			case "hash":
 				return ec.fieldContext_Deck_hash(ctx, field)
+			case "isValid":
+				return ec.fieldContext_Deck_isValid(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
@@ -2930,6 +3067,11 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isValid":
+			out.Values[i] = ec._Deck_isValid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2982,6 +3124,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteDeck":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteDeck(ctx, field)
+			})
+		case "setValid":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_setValid(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

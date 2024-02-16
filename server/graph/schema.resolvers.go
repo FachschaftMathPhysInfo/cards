@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
+	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -58,6 +59,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 		Semester:  input.Semester,
 		Year:      input.Year,
 		Hash:      encodedHash,
+		IsValid:   false,
 	}
 
 	// insert deck
@@ -90,6 +92,17 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 
 // DeleteDeck is the resolver for the deleteDeck field.
 func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string, error) {
+	tokenString, ok := ctx.Value("jwt").(string)
+	if !ok || tokenString == "" {
+		return nil, fmt.Errorf("missing JWT token")
+	}
+
+	// Validate JWT token
+	err := VerifyToken(tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid JWT token: %v", err)
+	}
+
 	cardDecks := r.DB.Collection("cardDecks")
 	filter := bson.D{{Key: "hash", Value: hash}}
 	res, _ := cardDecks.DeleteOne(ctx, filter)
@@ -108,6 +121,29 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 		return nil, err
 	}
 
+	return &hash, nil
+}
+
+// SetValid is the resolver for the setValid field.
+func (r *mutationResolver) SetValid(ctx context.Context, hash string) (*string, error) {
+	tokenString, ok := ctx.Value("jwt").(string)
+	if !ok || tokenString == "" {
+		return nil, fmt.Errorf("missing JWT token")
+	}
+
+	// Validate JWT token
+	err := VerifyToken(tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid JWT token: %v", err)
+	}
+
+	cardDecks := r.DB.Collection("cardDecks")
+	filter := bson.D{{Key: "hash", Value: hash}}
+	update := bson.D{{Key: "isValid", Value: true}}
+	res := cardDecks.FindOneAndUpdate(ctx, filter, update)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
 	return &hash, nil
 }
 
@@ -135,6 +171,27 @@ func (r *queryResolver) Decks(ctx context.Context) ([]*model.Deck, error) {
 	}
 
 	return decks, nil
+}
+
+// VerifyToken validates the JWT token
+func VerifyToken(tokenString string) error {
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method and provide the secret key
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
 
 // Mutation returns MutationResolver implementation.

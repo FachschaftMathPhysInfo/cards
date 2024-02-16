@@ -15,6 +15,7 @@ type Deck struct {
 	Semester  *string `json:"semester,omitempty"`
 	Year      *int    `json:"year,omitempty"`
 	Hash      string  `json:"hash"`
+	IsValid   bool    `json:"isValid"`
 }
 
 type Mutation struct {

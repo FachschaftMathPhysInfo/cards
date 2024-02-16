@@ -1,4 +1,5 @@
 import 'package:cards/main.dart';
+import 'package:cards/modules/auth_prompt.dart';
 import 'package:cards/modules/deck_table.dart';
 import 'package:cards/pages/create_deck_dialog.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,14 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                         return CreateDeckDialog();
                       }),
                   icon: const Icon(Icons.upload)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.login))
+              IconButton(
+                  onPressed: () => showDialog(
+                      context: context,
+                      builder: (context) {
+                        // ignore: prefer_const_constructors
+                        return AuthPrompt();
+                      }),
+                  icon: const Icon(Icons.login))
             ],
           ),
           body: Query(

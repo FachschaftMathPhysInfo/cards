@@ -16,7 +16,7 @@ void main() {
 }
 
 ValueNotifier<GraphQLClient> client = ValueNotifier(
-    GraphQLClient(cache: GraphQLCache(), link: HttpLink(c.GraphQL.httpLink)));
+    GraphQLClient(cache: GraphQLCache(), link: HttpLink(c.GraphQL.graphqlUrl)));
 
 class Cards extends StatelessWidget {
   const Cards({super.key});
