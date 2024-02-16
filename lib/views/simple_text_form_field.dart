@@ -8,6 +8,7 @@ class SimpleTextFormField extends StatelessWidget {
   final Icon icon;
   final bool autofocus;
   final int maxLength;
+  final bool isPassword;
   const SimpleTextFormField(
       {required this.labelText,
       required this.controller,
@@ -15,6 +16,7 @@ class SimpleTextFormField extends StatelessWidget {
       this.autofocus = false,
       this.maxLength = 30,
       this.helperText = "",
+      this.isPassword = false,
       super.key});
 
   @override
@@ -25,6 +27,7 @@ class SimpleTextFormField extends StatelessWidget {
       autofocus: autofocus,
       cursorHeight: 20,
       cursorColor: Colors.grey,
+      obscureText: isPassword,
       decoration: InputDecoration(
           icon: icon,
           labelText: labelText,

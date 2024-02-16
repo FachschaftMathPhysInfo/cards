@@ -45,14 +45,21 @@ class Strings {
   static const String uploadSuccessMessage =
       "Danke!\nWir geben das Deck so bald wie möglich frei.";
   static const String goingToBeDeleted = "wird gelöscht!";
+
+  static const String fsLogin = "Fachschaftslogin";
+  static const String username = "Nutzername";
+  static const String password = "Passwort";
+  static const String login = "Einloggen";
 }
 
 class GraphQL {
   GraphQL._();
-  static const String httpLink = "http://localhost:8080/graphql";
-  static const String deckStoragePath =
-      "http://localhost:8080/deckfiles"; // no trailing slash
+  static const String baseUrl = "http://localhost:8080";
+  static const String graphqlUrl = "$baseUrl/graphql";
+  static const String deckfilesUrl = "$baseUrl/deckfiles";
+  static const String loginUrl = "$baseUrl/login/";
 
+  // query
   static const String fetchDecks = """
     query {
       decks {
@@ -64,9 +71,12 @@ class GraphQL {
         semester
         year
         hash
+        isValid
       }
     }
   """;
+
+  // mutations
   static const String createDeck = """
     mutation CreateDeck(\$input: NewDeck!) {
       createDeck(input: \$input) {
@@ -77,6 +87,11 @@ class GraphQL {
   static const String deleteDeck = """
     mutation DeleteDeck(\$hash: String!) {
       deleteDeck(hash: \$hash)
+    }
+  """;
+  static const String setValid = """
+    mutation SetValid(\$hash: String!) {
+      setValid(hash: \$hash)
     }
   """;
 }

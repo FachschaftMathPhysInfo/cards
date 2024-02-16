@@ -1,6 +1,5 @@
-import 'package:cards/utils/download_file.dart';
+import 'package:cards/utils/download.dart';
 import 'package:cards/views/simple_text_field.dart';
-import 'package:cards/views/simple_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/main.dart';
 import 'package:cards/views/deck_table_title.dart';
@@ -95,8 +94,8 @@ class _DeckTableState extends State<DeckTable> {
                                   String hash = deck["hash"];
                                   String module = deck["module"];
                                   String subject = deck["subject"];
-                                  String filePath = c.GraphQL.deckStoragePath;
-                                  downloadDeck("$filePath/$hash.apkg",
+                                  String filePath = c.GraphQL.deckfilesUrl;
+                                  download("$filePath/$hash.apkg",
                                       "$module-$subject");
                                 }),
                             Mutation(

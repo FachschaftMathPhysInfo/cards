@@ -9,6 +9,7 @@ type Deck {
   semester: String
   year: Int
   hash: String!
+  isValid: Boolean!
 }
 
 type Query {
@@ -29,4 +30,5 @@ input NewDeck {
 type Mutation {
   createDeck(input: NewDeck!): Deck!
   deleteDeck(hash: String!): String
+  setValid(hash: String!): String
 }

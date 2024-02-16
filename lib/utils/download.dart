@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 
-Future<void> downloadDeck(String url, String newFilename) async {
+Future<void> download(String url, String newFilename) async {
   try {
     http.Response response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
