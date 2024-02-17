@@ -10,7 +10,12 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 class DeckTable extends StatefulWidget {
   final List<Map<String, dynamic>> decks;
   final Function refetchQuery;
-  const DeckTable({super.key, required this.decks, required this.refetchQuery});
+  final Map<String, dynamic>? decodedToken;
+  const DeckTable(
+      {super.key,
+      required this.decks,
+      required this.refetchQuery,
+      required this.decodedToken});
 
   @override
   State<DeckTable> createState() => _DeckTableState();
@@ -51,13 +56,13 @@ class _DeckTableState extends State<DeckTable> {
         SimpleTextField(
           onChanged: (pattern) => filterDecks(pattern!),
           label: c.Strings.filter,
-          hint: c.Strings.filterHintText,
+          hint: c.Strings.moduleAltHelper,
           icon: const Icon(Icons.search),
           autofocus: true,
         ),
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: SingleChildScrollView(
+        SingleChildScrollView(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
             child: DataTable(
               columns: const <DataColumn>[
                 DataColumn(label: DeckTableTitle(text: c.Strings.module)),
@@ -98,36 +103,42 @@ class _DeckTableState extends State<DeckTable> {
                                   download("$filePath/$hash.apkg",
                                       "$module-$subject");
                                 }),
-                            Mutation(
-                                options: MutationOptions(
-                                    document: gql(c.GraphQL.deleteDeck),
-                                    onCompleted: (dynamic resultData) {
-                                      widget.refetchQuery();
-                                      logflob.info(resultData.toString());
-                                    },
-                                    onError: (OperationException? error) {
-                                      logflob.shout(error.toString());
-                                    }),
-                                builder: (RunMutation deleteDeckMutation,
-                                    QueryResult? deleteResult) {
-                                  deleteDeck() {
-                                    deleteDeckMutation(
-                                        {"hash": deck["hash"].toString()});
-                                  }
-
-                                  return IconButton(
-                                      onPressed: () {
-                                        simpleAlert(context,
-                                            "${deck["module"]} ${c.Strings.goingToBeDeleted}",
-                                            () {
-                                          deleteDeck();
-                                        });
+                            if (widget.decodedToken != null) ...[
+                              IconButton(
+                                  // TODO
+                                  onPressed: () {},
+                                  icon: const Icon(Icons.edit)),
+                              Mutation(
+                                  options: MutationOptions(
+                                      document: gql(c.GraphQL.deleteDeck),
+                                      onCompleted: (dynamic resultData) {
+                                        widget.refetchQuery();
+                                        logflob.info(resultData.toString());
                                       },
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: c.Colors.red,
-                                      ));
-                                })
+                                      onError: (OperationException? error) {
+                                        logflob.shout(error.toString());
+                                      }),
+                                  builder: (RunMutation deleteDeckMutation,
+                                      QueryResult? deleteResult) {
+                                    deleteDeck() {
+                                      deleteDeckMutation(
+                                          {"hash": deck["hash"].toString()});
+                                    }
+
+                                    return IconButton(
+                                        onPressed: () {
+                                          simpleAlert(context,
+                                              "${deck["module"]} ${c.Strings.goingToBeDeleted}",
+                                              () {
+                                            deleteDeck();
+                                          });
+                                        },
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: c.Colors.red,
+                                        ));
+                                  })
+                            ]
                           ],
                         ))
                       ]))
