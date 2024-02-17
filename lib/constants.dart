@@ -22,7 +22,6 @@ class Strings {
   static const String subject = "Thema";
 
   static const String filter = "Filter";
-  static const String filterHintText = "Suchparameter angeben";
 
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =
@@ -59,7 +58,7 @@ class GraphQL {
   static const String deckfilesUrl = "$baseUrl/deckfiles";
   static const String loginUrl = "$baseUrl/login/";
 
-  // query
+  // queries
   static const String fetchDecks = """
     query {
       decks {
@@ -73,6 +72,11 @@ class GraphQL {
         hash
         isValid
       }
+    }
+  """;
+  static const String isValidToken = """
+    query IsValidToken(\$jwtToken: String!) {
+      isValidToken(jwtToken: \$jwtToken)
     }
   """;
 

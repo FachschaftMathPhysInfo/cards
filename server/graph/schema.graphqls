@@ -14,6 +14,7 @@ type Deck {
 
 type Query {
   decks: [Deck!]!
+  isValidToken(jwtToken: String!): Boolean!
 }
 
 input NewDeck {

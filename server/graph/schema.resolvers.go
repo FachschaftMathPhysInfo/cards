@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/FachschaftMathPhysInfo/cards/server/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -98,7 +98,7 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 	}
 
 	// Validate JWT token
-	err := VerifyToken(tokenString)
+	err := utils.VerifyToken(tokenString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid JWT token: %v", err)
 	}
@@ -132,7 +132,7 @@ func (r *mutationResolver) SetValid(ctx context.Context, hash string) (*string, 
 	}
 
 	// Validate JWT token
-	err := VerifyToken(tokenString)
+	err := utils.VerifyToken(tokenString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid JWT token: %v", err)
 	}
@@ -173,25 +173,13 @@ func (r *queryResolver) Decks(ctx context.Context) ([]*model.Deck, error) {
 	return decks, nil
 }
 
-// VerifyToken validates the JWT token
-func VerifyToken(tokenString string) error {
-	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		// Check the signing method and provide the secret key
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
-	})
+// IsValidToken is the resolver for the isValidToken field.
+func (r *queryResolver) IsValidToken(ctx context.Context, jwtToken string) (bool, error) {
+	err := utils.VerifyToken(jwtToken)
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
-	}
-
-	return nil
+	return true, nil
 }
 
 // Mutation returns MutationResolver implementation.

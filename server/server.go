@@ -56,9 +56,10 @@ func main() {
 			return
 		}
 
-		// Set JWT token as cookie and redirect
-		http.SetCookie(w, jwtCookie)
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		// Return JWT token to caller
+		response := map[string]string{"jwt": jwtCookie.Value}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	})
 
 	// Serve GraphQL endpoint without authentication
