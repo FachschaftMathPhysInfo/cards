@@ -68,27 +68,63 @@ class _DecksWithSearch extends State<DecksWithSearch> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          const SizedBox(height: 20),
           if (widget.decodedToken != null) ...[
-            DeckTable(
-              decks: unauthorizedDecks,
-              refetchQuery: widget.refetchQuery,
-              decodedToken: widget.decodedToken,
-              emptyText: c.Strings.nothingToDo,
+            Column(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            c.Strings.adminPanel,
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        DeckTable(
+                          decks: unauthorizedDecks,
+                          refetchQuery: widget.refetchQuery,
+                          decodedToken: widget.decodedToken,
+                          emptyText: c.Strings.nothingToDo,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20)
+              ],
             )
           ],
-          SimpleTextField(
-            onChanged: (pattern) => filterDecks(pattern!),
-            label: c.Strings.filter,
-            hint: c.Strings.moduleAltHelper,
-            icon: const Icon(Icons.search),
-            autofocus: true,
+          Container(
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(10))),
+            child: Column(
+              children: [
+                SimpleTextField(
+                  onChanged: (pattern) => filterDecks(pattern!),
+                  label: c.Strings.filter,
+                  hint: c.Strings.moduleAltHelper,
+                  icon: const Icon(Icons.search),
+                  autofocus: true,
+                ),
+                DeckTable(
+                  decks: filteredDecks,
+                  refetchQuery: widget.refetchQuery,
+                  decodedToken: widget.decodedToken,
+                  emptyText: c.Strings.nothingFound,
+                )
+              ],
+            ),
           ),
-          DeckTable(
-            decks: filteredDecks,
-            refetchQuery: widget.refetchQuery,
-            decodedToken: widget.decodedToken,
-            emptyText: c.Strings.nothingFound,
-          )
         ],
       ),
     );

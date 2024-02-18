@@ -7,6 +7,7 @@ class Colors {
   static const Color blue = Color(0xFF388bea);
   static const Color turquoiseDark = Color(0xFF54988c);
   static const Color orange = Color(0xFFf29642);
+  static const Color lightGrey = Color(0xEDEDEDED);
 }
 
 class Strings {
@@ -23,6 +24,7 @@ class Strings {
 
   static const String filter = "Filter";
   static const String nothingToDo = "Nichts zu tun";
+  static const String adminPanel = "Desch is zu autorisieren";
 
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =
