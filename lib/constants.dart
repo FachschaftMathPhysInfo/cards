@@ -22,6 +22,7 @@ class Strings {
   static const String subject = "Thema";
 
   static const String filter = "Filter";
+  static const String nothingToDo = "Nichts zu tun";
 
   static const String nothingFound = "Keine Karten gefunden";
   static const String error =

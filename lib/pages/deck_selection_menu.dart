@@ -1,6 +1,6 @@
 import 'package:cards/main.dart';
+import 'package:cards/modules/decks_with_search.dart';
 import 'package:cards/pages/auth_prompt.dart';
-import 'package:cards/modules/deck_table.dart';
 import 'package:cards/pages/create_deck_dialog.dart';
 import 'package:cards/utils/session.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                               return CreateDeckDialog();
                             }),
                         icon: const Icon(Icons.upload)),
-                    if (result.hasException) ...[
+                    if (decodedToken == null) ...[
                       IconButton(
                           onPressed: () => showDialog(
                               context: context,
@@ -92,7 +92,7 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                                     const BoxConstraints(maxWidth: 1200),
                                 child: SizedBox(
                                     width: MediaQuery.of(context).size.width,
-                                    child: DeckTable(
+                                    child: DecksWithSearch(
                                       decodedToken: decodedToken,
                                       decks: decks,
                                       refetchQuery: () {
