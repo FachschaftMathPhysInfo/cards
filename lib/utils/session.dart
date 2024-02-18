@@ -15,8 +15,11 @@ Map<String, dynamic>? getDecodedToken() {
   for (String cookie in cookies) {
     List<String> parts = cookie.split("=");
     if (parts[0] == "jwt") {
-      Map<String, dynamic> decodedToken = Jwt.parseJwt(parts[1]);
+      final jwtToken = parts[1];
+      Map<String, dynamic> decodedToken = Jwt.parseJwt(jwtToken);
       decodedToken["user"] = jsonDecode(decodedToken["user"])["username"];
+      decodedToken["jwt"] = jwtToken;
+      logflob.shout("token: $decodedToken");
       return decodedToken;
     }
   }

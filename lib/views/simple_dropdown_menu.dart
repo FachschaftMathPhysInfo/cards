@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class SimpleDropdownMenu extends StatefulWidget {
   final List<Map<String, dynamic>> list;
   final String initDropdownValue;
-  final Function(dynamic?) onChanged;
+  final Function(dynamic) onChanged;
   const SimpleDropdownMenu(
       {required this.list,
       super.key,

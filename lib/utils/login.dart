@@ -17,7 +17,7 @@ Future<void> login(String username, String password) async {
       final String jwtToken = data["jwt"];
       logflob.shout(jwtToken);
 
-      html.document.cookie = "jwt=$jwtToken; Path:/;";
+      html.document.cookie = "jwt=$jwtToken; Path:/; SameSite=None";
       html.window.location.href = "/";
 
       logflob.info('Login successful! JWT Token: $jwtToken');

@@ -9,7 +9,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:country_flags/country_flags.dart';
 
 class CreateDeckDialog extends StatefulWidget {
   const CreateDeckDialog({super.key});
