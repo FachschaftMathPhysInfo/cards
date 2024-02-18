@@ -1,6 +1,5 @@
 import 'package:cards/utils/download.dart';
 import 'package:cards/views/flag.dart';
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/main.dart';
 import 'package:cards/views/deck_table_title.dart';

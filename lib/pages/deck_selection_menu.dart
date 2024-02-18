@@ -20,11 +20,14 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
   Widget build(BuildContext context) {
     return Query(
         options: QueryOptions(
-            document: gql(c.GraphQL.isValidToken),
-            variables: {
-              "jwtToken": decodedToken != null ? decodedToken!["jwt"] : ""
-            }),
+          document: gql(c.GraphQL.isValidToken),
+          variables: {
+            "jwtToken": decodedToken != null ? decodedToken!["jwt"] : ""
+          },
+        ),
         builder: (QueryResult result, {fetchMore, refetch}) {
+          if (result.hasException) decodedToken = null;
+
           return SelectionArea(
             child: Scaffold(
                 appBar: AppBar(
