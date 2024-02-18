@@ -1,4 +1,5 @@
 import 'package:cards/main.dart';
+import 'package:cards/views/flag.dart';
 import 'package:cards/views/simple_alert.dart';
 import "package:http/http.dart";
 import 'package:cards/views/simple_dropdown_menu.dart';
@@ -8,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:country_flags/country_flags.dart';
 
 class CreateDeckDialog extends StatefulWidget {
   const CreateDeckDialog({super.key});
@@ -26,9 +28,10 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
       DateTime.now().month >= 10 || DateTime.now().month <= 3
           ? c.Strings.wise
           : c.Strings.sose;
-  String selectedYear = DateTime.now().month < 10
-      ? (DateTime.now().year - 1).toString()
-      : DateTime.now().year.toString();
+  int selectedYear = DateTime.now().month < 10
+      ? (DateTime.now().year - 1)
+      : DateTime.now().year;
+  String selectedLanguage = "de";
 
   FilePickerResult? _deckFileResult;
 
@@ -61,8 +64,9 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                     "module": moduleController.text,
                     "moduleAlt": moduleAltController.text,
                     "examiners": examinersController.text,
+                    "language": selectedLanguage,
                     "semester": selectedSemester,
-                    "year": int.parse(selectedYear),
+                    "year": selectedYear,
                     "file": selectedDeck
                   }
                 });
@@ -147,23 +151,42 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       const SizedBox(width: 10),
                       SimpleDropdownMenu(
                         initDropdownValue: selectedSemester,
-                        list: const [c.Strings.sose, c.Strings.wise],
-                        onChanged: (String? value) {
+                        list: const [
+                          {c.Strings.sose: Text(c.Strings.sose)},
+                          {c.Strings.wise: Text(c.Strings.wise)}
+                        ],
+                        onChanged: (value) {
                           setState(() {
                             selectedSemester = value!;
                           });
                         },
                       ),
-                      Expanded(child: Container()),
-                      const Text(c.Strings.year),
                       const SizedBox(width: 10),
                       SimpleDropdownMenu(
                           list: List.generate(
-                              15, (i) => (DateTime.now().year - i).toString()),
-                          initDropdownValue: selectedYear,
-                          onChanged: (String? value) {
+                              15,
+                              (i) => {
+                                    (DateTime.now().year - i).toString(): Text(
+                                        (DateTime.now().year - i).toString())
+                                  }),
+                          initDropdownValue: selectedYear.toString(),
+                          onChanged: (value) {
                             setState(() {
                               selectedYear = value!;
+                            });
+                          }),
+                      Expanded(child: Container()),
+                      const Text(c.Strings.language),
+                      const SizedBox(width: 10),
+                      SimpleDropdownMenu(
+                          list: const [
+                            {"de": Flag(languageCode: "de")},
+                            {"en": Flag(languageCode: "en")}
+                          ],
+                          initDropdownValue: selectedLanguage,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedLanguage = value!;
                             });
                           })
                     ],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SimpleDropdownMenu extends StatefulWidget {
-  final List<String> list;
+  final List<Map<String, dynamic>> list;
   final String initDropdownValue;
-  final Function(String?) onChanged;
+  final Function(dynamic?) onChanged;
   const SimpleDropdownMenu(
       {required this.list,
       super.key,
@@ -20,8 +20,11 @@ class _SimpleDropdownMenuState extends State<SimpleDropdownMenu> {
     return DropdownButton(
       value: widget.initDropdownValue,
       onChanged: widget.onChanged,
-      items: widget.list.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(value: value, child: Text(value));
+      items: widget.list.map<DropdownMenuItem<String>>((item) {
+        return DropdownMenuItem<String>(
+          value: item.keys.first,
+          child: item.values.first,
+        );
       }).toList(),
     );
   }
