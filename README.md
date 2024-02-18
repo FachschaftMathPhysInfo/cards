@@ -4,7 +4,7 @@ Database for Anki Decks with reviewer functionality in the future
 ## todo
 - [x] `server/graph/schema.resolvers.go` => handle file upload
 - [ ] kerberos authentication
-    - [ ] admin view
+    - [x] admin view
     - [x] login popup
     - [x] jwt token for specific mutations
     - [ ] authentication against fs server 
