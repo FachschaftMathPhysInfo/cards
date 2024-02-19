@@ -30,12 +30,15 @@ class Strings {
   static const String error =
       "Ugh, ein interner Fehler.\nBitte kontaktiere <root@mathphys.info>.";
 
+  static const String editDeck = "Deck bearbeiten";
   static const String contributeDeck = "Deck einreichen";
   static const String submit = "Einreichen";
+  static const String save = "Speichern";
   static const String upload = "Datei hochladen";
   static const String wise = "WiSe";
   static const String sose = "SoSe";
   static const String moduleAltHelper = "z.B. LA1";
+  static const String submitError = "Alle Felder müssen befüllt sein";
   static const String userConstent =
       "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten durch die Fachschaft MathPhysInfo der Uni Heidelberg verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
 
@@ -89,6 +92,11 @@ class GraphQL {
       createDeck(input: \$input) {
         module
       }
+    }
+  """;
+  static const String updateDeck = """
+    mutation UpdateDeck(\$input: UpdatedDeck!) {
+      updateDeck(input: \$input)
     }
   """;
   static const String deleteDeck = """

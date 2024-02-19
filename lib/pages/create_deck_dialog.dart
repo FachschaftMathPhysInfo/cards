@@ -1,10 +1,8 @@
 import 'package:cards/main.dart';
-import 'package:cards/views/flag.dart';
+import 'package:cards/modules/deck_form_fields.dart';
 import 'package:cards/views/simple_alert.dart';
 import "package:http/http.dart";
-import 'package:cards/views/simple_dropdown_menu.dart';
 import 'package:cards/views/filled_text_button.dart';
-import 'package:cards/views/simple_text_form_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
@@ -78,14 +76,13 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       text: c.Strings.submit,
                       bgColor: c.Colors.turquoiseDark,
                       fgColor: Colors.white,
-                      onPressed: moduleController.text.isNotEmpty &&
-                              moduleAltController.text.isNotEmpty &&
-                              subjectController.text.isNotEmpty &&
-                              examinersController.text.isNotEmpty &&
-                              _deckFileResult != null
-                          ? () {
-                              createDeck();
-                            }
+                      onPressed: () => _deckFileResult != null
+                          ? subjectController.text.isNotEmpty &&
+                                  moduleController.text.isNotEmpty &&
+                                  moduleAltController.text.isNotEmpty &&
+                                  examinersController.text.isNotEmpty
+                              ? createDeck()
+                              : simpleAlert(context, c.Strings.submitError)
                           : null));
             })
       ],
@@ -118,77 +115,29 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
-                  SimpleTextFormField(
-                    labelText: c.Strings.module,
-                    controller: moduleController,
-                    autofocus: true,
-                    icon: const Icon(Icons.subject),
-                  ),
-                  const SizedBox(height: 10),
-                  SimpleTextFormField(
-                      labelText: c.Strings.moduleAlt,
-                      controller: moduleAltController,
-                      maxLength: 6,
-                      helperText: c.Strings.moduleAltHelper,
-                      icon: const Icon(Icons.short_text)),
-                  const SizedBox(height: 10),
-                  SimpleTextFormField(
-                    labelText: c.Strings.subject,
-                    controller: subjectController,
-                    icon: const Icon(Icons.school),
-                  ),
-                  const SizedBox(height: 10),
-                  SimpleTextFormField(
-                    labelText: c.Strings.prof,
-                    controller: examinersController,
-                    icon: const Icon(Icons.person),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Text(c.Strings.semester),
-                      const SizedBox(width: 10),
-                      SimpleDropdownMenu(
-                        initDropdownValue: selectedSemester,
-                        list: const [
-                          {c.Strings.sose: Text(c.Strings.sose)},
-                          {c.Strings.wise: Text(c.Strings.wise)}
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            selectedSemester = value!;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      SimpleDropdownMenu(
-                          list: List.generate(
-                              15,
-                              (i) => {
-                                    (DateTime.now().year - i).toString(): Text(
-                                        (DateTime.now().year - i).toString())
-                                  }),
-                          initDropdownValue: selectedYear.toString(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedYear = value!;
-                            });
-                          }),
-                      Expanded(child: Container()),
-                      const Text(c.Strings.language),
-                      const SizedBox(width: 10),
-                      SimpleDropdownMenu(
-                          list: const [
-                            {"de": Flag(languageCode: "de")},
-                            {"en": Flag(languageCode: "en")}
-                          ],
-                          initDropdownValue: selectedLanguage,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedLanguage = value!;
-                            });
-                          })
-                    ],
+                  DeckFormFields(
+                    moduleController: moduleController,
+                    moduleAltController: moduleAltController,
+                    subjectController: subjectController,
+                    examinersController: examinersController,
+                    selectedLanguage: selectedLanguage,
+                    selectedYear: selectedYear,
+                    selectedSemester: selectedSemester,
+                    onSemesterChange: (semester) {
+                      setState(() {
+                        selectedSemester = semester;
+                      });
+                    },
+                    onYearChange: (year) {
+                      setState(() {
+                        selectedYear = int.parse(year);
+                      });
+                    },
+                    onLanguageChange: (languageCode) {
+                      setState(() {
+                        selectedLanguage = languageCode;
+                      });
+                    },
                   ),
                   Expanded(
                     child: Row(

@@ -1,3 +1,4 @@
+import 'package:cards/pages/edit_deck_dialog.dart';
 import 'package:cards/utils/download.dart';
 import 'package:cards/views/flag.dart';
 import 'package:flutter/material.dart';
@@ -82,8 +83,22 @@ class DeckTable extends StatelessWidget {
                         // Edit
                         //
                         IconButton(
-                            // TODO Edit Button
-                            onPressed: () {},
+                            onPressed: () => showDialog(
+                                barrierDismissible: false,
+                                context: context,
+                                builder: (context) {
+                                  // ignore: prefer_const_constructors
+                                  return EditDeckDialog(
+                                      refetchQuery: refetchQuery,
+                                      module: deck["module"],
+                                      moduleAlt: deck["moduleAlt"],
+                                      subject: deck["subject"],
+                                      examiners: deck["examiners"],
+                                      semester: deck["semester"],
+                                      year: deck["year"],
+                                      language: deck["language"],
+                                      hash: deck["hash"]);
+                                }),
                             icon: const Icon(Icons.edit)),
                         //
                         // Approve

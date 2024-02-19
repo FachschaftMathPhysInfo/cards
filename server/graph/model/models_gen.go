@@ -34,3 +34,14 @@ type NewDeck struct {
 
 type Query struct {
 }
+
+type UpdatedDeck struct {
+	Subject   *string `json:"subject,omitempty"`
+	Module    *string `json:"module,omitempty"`
+	ModuleAlt *string `json:"moduleAlt,omitempty"`
+	Examiners *string `json:"examiners,omitempty"`
+	Language  *string `json:"language,omitempty"`
+	Semester  *string `json:"semester,omitempty"`
+	Year      *int    `json:"year,omitempty"`
+	Hash      string  `json:"hash"`
+}

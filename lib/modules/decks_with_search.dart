@@ -88,7 +88,6 @@ class _DecksWithSearch extends State<DecksWithSearch> {
                                 fontSize: 20, fontWeight: FontWeight.w600),
                           ),
                         ),
-                        const SizedBox(height: 10),
                         DeckTable(
                           decks: unauthorizedDecks,
                           refetchQuery: widget.refetchQuery,
