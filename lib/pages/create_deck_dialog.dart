@@ -176,7 +176,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                     ),
                   ),
                   const Text(
-                    c.Strings.userConstent,
+                    c.Strings.userConsent,
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
