@@ -15,6 +15,7 @@ type Deck struct {
 	Semester  *string `json:"semester,omitempty"`
 	Year      *int    `json:"year,omitempty"`
 	Hash      string  `json:"hash"`
+	FileType  *string `json:"fileType,omitempty"`
 	IsValid   bool    `json:"isValid"`
 }
 

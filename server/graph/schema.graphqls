@@ -9,6 +9,7 @@ type Deck {
   semester: String
   year: Int
   hash: String!
+  fileType: String
   isValid: Boolean!
 }
 
