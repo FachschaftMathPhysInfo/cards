@@ -11,7 +11,8 @@ Database for Anki Decks with reviewer functionality in the future
 - [x] `lib/modules/deck_selection_menu.dart` => file download: still not taking the new filename
 - [x] search bar
 - [x] `lib/modules/create_deck_dialog.dart` => language selection
-- [ ] `lib/modules/create_deck_dialog.dart` => field validation currently updates after a file was uploaded and not on text entry, which is bad => file upload currently has to be the last thing to do for the validation to work "properly"...
+- [x] `lib/modules/create_deck_dialog.dart` => field validation currently updates after a file was uploaded and not on text entry, which is bad => file upload currently has to be the last thing to do for the validation to work "properly"...
+- [x] edit deck dialog
 - [ ] localization
 
 ## dev
