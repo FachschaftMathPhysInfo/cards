@@ -39,7 +39,7 @@ class Strings {
   static const String sose = "SoSe";
   static const String moduleAltHelper = "z.B. LA1";
   static const String submitError = "Alle Felder müssen befüllt sein";
-  static const String userConstent =
+  static const String userConsent =
       "Mit dem Klicken auf <Einreichen> erkläre ich mich einverstanden, dass die von mir angegebenen Daten durch die Fachschaft MathPhysInfo der Uni Heidelberg verarbeitet, und der Allgemeinheit zur Verfügung gestellt werden.";
 
   static const String okay = "Okay";
