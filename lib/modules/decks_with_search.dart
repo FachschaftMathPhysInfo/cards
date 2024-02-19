@@ -52,13 +52,15 @@ class _DecksWithSearch extends State<DecksWithSearch> {
             ("${deck["semester"]?.toString() ?? ""} ${deck["year"]?.toString() ?? ""}");
         final size = deck["size"]?.toString() ?? "";
         final language = deck["language"]?.toString() ?? "";
+        final isValid = deck["isValid"] ?? false;
 
-        return module.contains(pattern) ||
-            moduleAlt.contains(pattern) ||
-            examiners.contains(pattern) ||
-            semesterYear.contains(pattern) ||
-            size.contains(pattern) ||
-            language.contains(pattern);
+        return (module.contains(pattern) ||
+                moduleAlt.contains(pattern) ||
+                examiners.contains(pattern) ||
+                semesterYear.contains(pattern) ||
+                size.contains(pattern) ||
+                language.contains(pattern)) &&
+            isValid;
       }).toList();
     });
   }
