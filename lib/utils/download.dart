@@ -3,7 +3,6 @@ import 'dart:html';
 import 'package:cards/main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
-import 'package:path/path.dart' as path;
 
 Future<void> download(String url, String newFilename) async {
   try {
@@ -13,7 +12,7 @@ Future<void> download(String url, String newFilename) async {
       Blob blob = Blob([bytes]);
       AnchorElement anchorElement =
           AnchorElement(href: Url.createObjectUrlFromBlob(blob));
-      anchorElement.download = "$newFilename${path.extension(url)}";
+      anchorElement.download = newFilename;
 
       anchorElement.click();
     } else {

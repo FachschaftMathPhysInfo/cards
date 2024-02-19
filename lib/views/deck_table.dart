@@ -74,9 +74,10 @@ class DeckTable extends StatelessWidget {
                             String hash = deck["hash"];
                             String module = deck["module"];
                             String subject = deck["subject"];
+                            String fileType = deck["fileType"];
                             String filePath = c.GraphQL.deckfilesUrl;
-                            download(
-                                "$filePath/$hash.apkg", "$module-$subject");
+                            download("$filePath$hash$fileType",
+                                "$module-$subject$fileType");
                           }),
                       if (decodedToken != null) ...[
                         //

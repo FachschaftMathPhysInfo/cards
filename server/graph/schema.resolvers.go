@@ -49,6 +49,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 		return nil, fmt.Errorf("Deck \"%s\" already exists", input.File.Filename)
 	}
 
+	filePath := filepath.Ext(input.File.Filename)
 	// map the GraphQL input to the model
 	deck := model.Deck{
 		Subject:   input.Subject,
@@ -59,6 +60,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 		Semester:  input.Semester,
 		Year:      input.Year,
 		Hash:      encodedHash,
+		FileType:  &filePath,
 		IsValid:   false,
 	}
 
