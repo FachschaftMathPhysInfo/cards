@@ -14,6 +14,7 @@ Database for Anki Decks with reviewer functionality in the future
 - [x] `lib/modules/create_deck_dialog.dart` => field validation currently updates after a file was uploaded and not on text entry, which is bad => file upload currently has to be the last thing to do for the validation to work "properly"...
 - [x] edit deck dialog
 - [ ] localization
+- [ ] edit card view
 
 ## dev
 1. get `mongodb` package and start the service
