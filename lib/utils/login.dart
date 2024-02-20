@@ -6,9 +6,15 @@ import 'package:cards/constants.dart' as c;
 import 'dart:html' as html;
 
 Future<void> login(String username, String password) async {
-  final Uri loginUri = Uri.parse(c.GraphQL.loginUrl + username);
+  final Uri loginUrl = Uri.parse(c.GraphQL.loginUrl);
   try {
-    final http.Response response = await http.get(loginUri);
+    final http.Response response = await http.post(
+      loginUrl,
+      headers: {
+        'Authorization':
+            'Basic ${base64Encode(utf8.encode("$username:$password"))}',
+      },
+    );
     logflob.info(response.statusCode);
     if (response.statusCode == 200) {
       logflob.shout(response.headers);

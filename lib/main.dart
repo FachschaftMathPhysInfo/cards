@@ -26,7 +26,7 @@ class Cards extends StatelessWidget {
     return GraphQLProvider(
       client: client,
       child: MaterialApp(
-          title: 'Cards',
+          title: c.Strings.appName,
           theme: ThemeData(scaffoldBackgroundColor: c.Colors.lightGrey),
           home: const DeckSelectionMenu()),
     );
