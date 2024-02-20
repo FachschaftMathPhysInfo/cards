@@ -9,7 +9,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/jwtauth"
-	"github.com/go-ldap/ldap"
+	"github.com/go-ldap/ldap/v3"
 )
 
 // User represents a user in the system

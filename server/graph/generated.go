@@ -64,7 +64,7 @@ type ComplexityRoot struct {
 		CreateDeck func(childComplexity int, input model.NewDeck) int
 		DeleteDeck func(childComplexity int, hash string) int
 		SetValid   func(childComplexity int, hash string) int
-		UpdateDeck func(childComplexity int, input model.UpdatedDeck) int
+		UpdateDeck func(childComplexity int, hash string, input model.NewDeck) int
 	}
 
 	Query struct {
@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error)
-	UpdateDeck(ctx context.Context, input model.UpdatedDeck) (*string, error)
+	UpdateDeck(ctx context.Context, hash string, input model.NewDeck) (*string, error)
 	DeleteDeck(ctx context.Context, hash string) (*string, error)
 	SetValid(ctx context.Context, hash string) (*string, error)
 }
@@ -219,7 +219,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateDeck(childComplexity, args["input"].(model.UpdatedDeck)), true
+		return e.complexity.Mutation.UpdateDeck(childComplexity, args["hash"].(string), args["input"].(model.NewDeck)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
@@ -249,7 +249,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewDeck,
-		ec.unmarshalInputUpdatedDeck,
 	)
 	first := true
 
@@ -414,15 +413,24 @@ func (ec *executionContext) field_Mutation_setValid_args(ctx context.Context, ra
 func (ec *executionContext) field_Mutation_updateDeck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.UpdatedDeck
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdatedDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐUpdatedDeck(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["hash"] = arg0
+	var arg1 model.NewDeck
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐNewDeck(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1004,7 +1012,7 @@ func (ec *executionContext) _Mutation_updateDeck(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["input"].(model.UpdatedDeck))
+		return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["hash"].(string), fc.Args["input"].(model.NewDeck))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3234,87 +3242,11 @@ func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj inter
 			it.Year = data
 		case "file":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
-			data, err := ec.unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.File = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputUpdatedDeck(ctx context.Context, obj interface{}) (model.UpdatedDeck, error) {
-	var it model.UpdatedDeck
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"subject", "module", "moduleAlt", "examiners", "language", "semester", "year", "hash"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "subject":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Subject = data
-		case "module":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("module"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Module = data
-		case "moduleAlt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moduleAlt"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ModuleAlt = data
-		case "examiners":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("examiners"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Examiners = data
-		case "language":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("language"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Language = data
-		case "semester":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("semester"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Semester = data
-		case "year":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Year = data
-		case "hash":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Hash = data
 		}
 	}
 
@@ -3966,26 +3898,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNUpdatedDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐUpdatedDeck(ctx context.Context, v interface{}) (model.UpdatedDeck, error) {
-	res, err := ec.unmarshalInputUpdatedDeck(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
-	res, err := graphql.UnmarshalUpload(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v graphql.Upload) graphql.Marshaler {
-	res := graphql.MarshalUpload(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -4294,6 +4206,22 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (*graphql.Upload, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalUpload(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalUpload(*v)
 	return res
 }
 

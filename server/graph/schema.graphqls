@@ -26,23 +26,12 @@ input NewDeck {
   language: String
   semester: String
   year: Int
-  file: Upload!
-}
-
-input UpdatedDeck {
-  subject: String
-  module: String
-  moduleAlt: String
-  examiners: String
-  language: String
-  semester: String
-  year: Int
-  hash: String!
+  file: Upload
 }
 
 type Mutation {
   createDeck(input: NewDeck!): Deck!
-  updateDeck(input: UpdatedDeck!): String
+  updateDeck(hash: String!, input: NewDeck!): String
   deleteDeck(hash: String!): String
   setValid(hash: String!): String
 }

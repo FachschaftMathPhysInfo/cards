@@ -61,6 +61,7 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
                 (RunMutation updateDeckMutation, QueryResult? updateResult) {
               updateDeck() {
                 updateDeckMutation({
+                  "hash": widget.hash,
                   "input": {
                     "subject": widget.subjectController.text,
                     "module": widget.moduleController.text,
@@ -69,7 +70,6 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
                     "language": widget.language,
                     "semester": widget.semester,
                     "year": widget.year,
-                    "hash": widget.hash
                   }
                 });
               }

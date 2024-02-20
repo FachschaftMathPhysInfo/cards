@@ -98,8 +98,8 @@ class GraphQL {
     }
   """;
   static const String updateDeck = """
-    mutation UpdateDeck(\$input: UpdatedDeck!) {
-      updateDeck(input: \$input)
+    mutation UpdateDeck(\$hash: String!, \$input: NewDeck!) {
+      updateDeck(hash: \$hash, input: \$input)
     }
   """;
   static const String deleteDeck = """

@@ -93,10 +93,10 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 }
 
 // UpdateDeck is the resolver for the updateDeck field.
-func (r *mutationResolver) UpdateDeck(ctx context.Context, input model.UpdatedDeck) (*string, error) {
+func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, input model.NewDeck) (*string, error) {
 	cardDecks := r.DB.Collection("cardDecks")
 
-	updatedDeck := model.UpdatedDeck{
+	updatedDeck := model.NewDeck{
 		Subject:   input.Subject,
 		Module:    input.Module,
 		ModuleAlt: input.ModuleAlt,
@@ -105,13 +105,13 @@ func (r *mutationResolver) UpdateDeck(ctx context.Context, input model.UpdatedDe
 		Semester:  input.Semester,
 		Year:      input.Year,
 	}
-	filter := bson.D{{Key: "hash", Value: input.Hash}}
+	filter := bson.D{{Key: "hash", Value: hash}}
 	update := bson.D{{Key: "$set", Value: &updatedDeck}}
 	res := cardDecks.FindOneAndUpdate(ctx, filter, update)
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
-	return &input.Hash, nil
+	return &hash, nil
 }
 
 // DeleteDeck is the resolver for the deleteDeck field.
