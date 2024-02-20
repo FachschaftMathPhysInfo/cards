@@ -17,8 +17,8 @@ type User struct {
 	Username string `json:"username"`
 }
 
-// createJWTCookie creates a JWT token for the given user
-func CreateJWTCookie(user *User, tokenAuth *jwtauth.JWTAuth) (*http.Cookie, error) {
+// CreateJWTToken creates a JWT token for the given user
+func CreateJWTToken(user *User, tokenAuth *jwtauth.JWTAuth) (*string, error) {
 	userJSON, err := json.Marshal(user)
 	if err != nil {
 		return nil, err
@@ -32,16 +32,7 @@ func CreateJWTCookie(user *User, tokenAuth *jwtauth.JWTAuth) (*http.Cookie, erro
 		return nil, err
 	}
 
-	// Create JWT token cookie
-	jwtCookie := &http.Cookie{
-		Name:     "jwt",
-		Value:    tokenString,
-		HttpOnly: true,
-		Path:     "/",
-		Expires:  time.Now().Add(time.Hour), // Set expiration time
-	}
-
-	return jwtCookie, nil
+	return &tokenString, nil
 }
 
 func VerifyToken(tokenString string) error {
@@ -92,7 +83,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user := &User{Username: username}
 	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("JWT_SECRET_KEY")), nil)
-	jwtCookie, err := CreateJWTCookie(user, tokenAuth)
+	jwtToken, err := CreateJWTToken(user, tokenAuth)
 	if err != nil {
 		http.Error(w, "Failed to create JWT token", http.StatusInternalServerError)
 		fmt.Println(err)
@@ -100,7 +91,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return JWT token to caller
-	response := map[string]string{"jwt": jwtCookie.Value}
+	response := map[string]string{"jwt": *jwtToken}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
