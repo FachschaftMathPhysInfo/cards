@@ -71,24 +71,25 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Authenticate with Kerberos via LDAP
-	ldapURL := os.Getenv("LDAP_URL")
-	l, err := ldap.DialURL(ldapURL)
-	if err != nil {
-		fmt.Println("LDAP dial error:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	defer l.Close()
+	if os.Getenv("ENVIRONMENT") == "production" {
+		// Authenticate with Kerberos via LDAP
+		ldapURL := os.Getenv("LDAP_URL")
+		l, err := ldap.DialURL(ldapURL)
+		if err != nil {
+			fmt.Println("LDAP dial error:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer l.Close()
 
-	err = l.Bind(username, password)
-	if err != nil {
-		fmt.Println("LDAP bind error:", err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		err = l.Bind(username, password)
+		if err != nil {
+			fmt.Println("LDAP bind error:", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 	}
 
-	// If authentication is successful, create JWT token for the user
 	user := &User{Username: username}
 	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("JWT_SECRET_KEY")), nil)
 	jwtCookie, err := CreateJWTCookie(user, tokenAuth)
