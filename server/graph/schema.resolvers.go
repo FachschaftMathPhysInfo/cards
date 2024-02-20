@@ -25,10 +25,6 @@ import (
 func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error) {
 	cardDecks := r.DB.Collection("cardDecks")
 
-	if input.Semester != nil && !(*input.Semester == "SoSe" || *input.Semester == "WiSe") {
-		return nil, fmt.Errorf("Input \"%s\" is not a valid input for field input.Semester", *input.Semester)
-	}
-
 	// hash and copy to the buffer at the same time
 	fileBuf := &bytes.Buffer{}
 	tee := io.TeeReader(input.File.File, fileBuf)
@@ -46,7 +42,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 	filter := bson.D{{Key: "hash", Value: encodedHash}}
 	searchRes := cardDecks.FindOne(context.Background(), filter).Decode(&dbDeck)
 	if searchRes != mongo.ErrNoDocuments {
-		return nil, fmt.Errorf("Deck \"%s\" already exists", input.File.Filename)
+		return nil, fmt.Errorf("deck \"%s\" already exists", input.File.Filename)
 	}
 
 	filePath := filepath.Ext(input.File.Filename)
@@ -120,7 +116,7 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 	filter := bson.D{{Key: "hash", Value: hash}}
 	res, _ := cardDecks.DeleteOne(ctx, filter)
 	if res.DeletedCount == 0 {
-		return nil, fmt.Errorf("Nothing found to be deleted. Hash: %s", hash)
+		return nil, fmt.Errorf("nothing found to be deleted - hash: %s", hash)
 	}
 
 	// remove deck from storage
