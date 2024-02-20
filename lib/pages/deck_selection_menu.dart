@@ -31,7 +31,7 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
           return SelectionArea(
             child: Scaffold(
                 appBar: AppBar(
-                  title: const Text("Dibsel"),
+                  title: const Text(c.Strings.appName),
                   actions: [
                     IconButton(
                         onPressed: () => showDialog(

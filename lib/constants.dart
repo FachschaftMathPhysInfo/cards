@@ -12,6 +12,8 @@ class Colors {
 
 class Strings {
   Strings._();
+  static const String appName = "Deserta";
+
   static const String module = "Modul";
   static const String moduleAlt = "Kurzform";
   static const String prof = "Dozent";
