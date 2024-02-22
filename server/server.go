@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -19,7 +20,7 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://database:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,9 +52,12 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./deckfiles"))
 	router.Handle("/deckfiles/*", http.StripPrefix("/deckfiles/", fileServer))
 
-	// Serve GraphQL playground
-	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	if os.Getenv("ENVIRONMENT") != "production" {
+		// Serve GraphQL playground
+		router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 
-	log.Printf("Connect to http://localhost:%s/ for GraphQL playground", defaultPort)
+		log.Printf("Connect to http://localhost:%s/ for GraphQL playground", defaultPort)
+	}
+
 	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
 }
