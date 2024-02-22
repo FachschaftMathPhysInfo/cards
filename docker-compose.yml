@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  database:
+    image: mongo
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database 
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+    depends_on:
+      - server
+
+volumes:
+  mongodb_data:

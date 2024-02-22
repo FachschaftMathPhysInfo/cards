@@ -61,7 +61,7 @@ class Strings {
 
 class GraphQL {
   GraphQL._();
-  static const String baseUrl = "http://localhost:8080";
+  static const String baseUrl = "http://server:8080";
   static const String graphqlUrl = "$baseUrl/graphql";
   static const String deckfilesUrl = "$baseUrl/deckfiles/";
   static const String loginUrl = "$baseUrl/login/";

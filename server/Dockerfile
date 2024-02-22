@@ -1,40 +1,16 @@
-# Install Operating system and dependencies
-FROM ubuntu:20.04
+FROM golang:1.21.3-bullseye AS build
 
-ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /go/src
 
-RUN apt-get update 
-RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback python3
-RUN apt-get clean
+COPY go.mod go.sum ./
+RUN go mod download
 
-ENV DEBIAN_FRONTEND=dialog
-ENV PUB_HOSTED_URL=https://pub.flutter-io.cn
-ENV FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+COPY graph ./graph
+COPY server.go ./server.go
+COPY utils ./utils
 
-# download Flutter SDK from Flutter Github repo
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
+RUN CGO_ENABLED=0 go build -a -o graphql-server server.go
 
-# Set flutter environment path
-ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
-
-# Run flutter doctor
-RUN flutter doctor
-
-# Enable flutter web
-RUN flutter channel master
-RUN flutter upgrade
-RUN flutter config --enable-web
-
-# Copy files to container and build
-RUN mkdir /app/
-COPY . /app/
-WORKDIR /app/
-RUN flutter build web
-
-# Record the exposed port
-EXPOSE 80
-
-# make server startup script executable and start the web server
-RUN ["chmod", "+x", "/app/server/server.sh"]
-
-ENTRYPOINT ["/app/server/server.sh"]
+FROM gcr.io/distroless/static-debian11
+COPY --from=build /go/src/graphql-server /
+ENTRYPOINT ["/graphql-server"]
