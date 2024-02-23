@@ -3,7 +3,6 @@ version: '3'
 services:
   database:
     image: mongo
-    restart: always
     volumes:
       - mongodb_data:/data/db
 
@@ -12,16 +11,18 @@ services:
       context: ./server
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - 8080:8080
+    env_file:
+      - .env
     depends_on:
-      - database 
+      - database
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8081:80"
+      - 8081:80
     depends_on:
       - server
 

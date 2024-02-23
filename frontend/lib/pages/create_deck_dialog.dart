@@ -76,13 +76,14 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       text: c.Strings.submit,
                       bgColor: c.Colors.turquoiseDark,
                       fgColor: Colors.white,
-                      onPressed: () => _deckFileResult != null
+                      onPressed: _deckFileResult != null
                           ? subjectController.text.isNotEmpty &&
                                   moduleController.text.isNotEmpty &&
                                   moduleAltController.text.isNotEmpty &&
                                   examinersController.text.isNotEmpty
-                              ? createDeck()
-                              : simpleAlert(context, c.Strings.submitError)
+                              ? () => createDeck()
+                              : () =>
+                                  simpleAlert(context, c.Strings.submitError)
                           : null));
             })
       ],
@@ -107,81 +108,76 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
         ],
       ),
       content: Builder(builder: (context) {
-        return Flexible(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                children: [
-                  DeckFormFields(
-                    moduleController: moduleController,
-                    moduleAltController: moduleAltController,
-                    subjectController: subjectController,
-                    examinersController: examinersController,
-                    selectedLanguage: selectedLanguage,
-                    selectedYear: selectedYear,
-                    selectedSemester: selectedSemester,
-                    onSemesterChange: (semester) {
-                      setState(() {
-                        selectedSemester = semester;
-                      });
-                    },
-                    onYearChange: (year) {
-                      setState(() {
-                        selectedYear = int.parse(year);
-                      });
-                    },
-                    onLanguageChange: (languageCode) {
-                      setState(() {
-                        selectedLanguage = languageCode;
-                      });
-                    },
-                  ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (_deckFileResult == null) ...{
-                          FilledTextButton(
-                              text: c.Strings.upload,
-                              bgColor: c.Colors.turquoiseLight,
-                              fgColor: Colors.white,
-                              onPressed: () async {
-                                FilePickerResult? result =
-                                    await FilePicker.platform.pickFiles(
-                                        type: FileType.custom,
-                                        allowedExtensions: ["apkg", "colpkg"]);
-                                if (result != null) {
-                                  setState(() {
-                                    _deckFileResult = result;
-                                  });
-                                }
-                              }),
-                        } else ...{
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            style: IconButton.styleFrom(
-                                foregroundColor: c.Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                _deckFileResult = null;
-                              });
-                            },
-                          ),
-                          Text(_deckFileResult!.files.single.name),
-                        }
-                      ],
-                    ),
-                  ),
-                  const Text(
-                    c.Strings.userConsent,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+        return SizedBox(
+          width: 500,
+          height: 600,
+          child: Column(
+            children: [
+              DeckFormFields(
+                moduleController: moduleController,
+                moduleAltController: moduleAltController,
+                subjectController: subjectController,
+                examinersController: examinersController,
+                selectedLanguage: selectedLanguage,
+                selectedYear: selectedYear,
+                selectedSemester: selectedSemester,
+                onSemesterChange: (semester) {
+                  setState(() {
+                    selectedSemester = semester;
+                  });
+                },
+                onYearChange: (year) {
+                  setState(() {
+                    selectedYear = int.parse(year);
+                  });
+                },
+                onLanguageChange: (languageCode) {
+                  setState(() {
+                    selectedLanguage = languageCode;
+                  });
+                },
               ),
-            ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_deckFileResult == null) ...{
+                      FilledTextButton(
+                          text: c.Strings.upload,
+                          bgColor: c.Colors.turquoiseLight,
+                          fgColor: Colors.white,
+                          onPressed: () async {
+                            FilePickerResult? result = await FilePicker.platform
+                                .pickFiles(
+                                    type: FileType.custom,
+                                    allowedExtensions: ["apkg", "colpkg"]);
+                            if (result != null) {
+                              setState(() {
+                                _deckFileResult = result;
+                              });
+                            }
+                          }),
+                    } else ...{
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        style:
+                            IconButton.styleFrom(foregroundColor: c.Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            _deckFileResult = null;
+                          });
+                        },
+                      ),
+                      Text(_deckFileResult!.files.single.name),
+                    }
+                  ],
+                ),
+              ),
+              const Text(
+                c.Strings.userConsent,
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
           ),
         );
       }),

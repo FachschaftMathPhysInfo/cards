@@ -44,7 +44,7 @@ func main() {
 	// Route for user login
 	router.Post("/login/", utils.HandleLogin)
 
-	// Serve GraphQL endpoint without authentication
+	// Serve GraphQL endpoint
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &gqlResolvers}))
 	router.Handle("/graphql", srv)
 
@@ -59,5 +59,6 @@ func main() {
 		log.Printf("Connect to http://localhost:%s/ for GraphQL playground", defaultPort)
 	}
 
+	log.Printf("Server running on http://localhost:%s", defaultPort)
 	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
 }

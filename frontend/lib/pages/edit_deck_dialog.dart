@@ -100,38 +100,34 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
         ],
       ),
       content: Builder(builder: (context) {
-        return Flexible(
-            child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            child: DeckFormFields(
-              moduleController: widget.moduleController,
-              moduleAltController: widget.moduleAltController,
-              subjectController: widget.subjectController,
-              examinersController: widget.examinersController,
-              selectedLanguage: widget.language,
-              selectedYear: widget.year,
-              selectedSemester: widget.semester,
-              onSemesterChange: (semester) {
-                setState(() {
-                  widget.semester = semester;
-                });
-              },
-              onYearChange: (year) {
-                setState(() {
-                  widget.year = int.parse(year);
-                });
-              },
-              onLanguageChange: (languageCode) {
-                setState(() {
-                  widget.language = languageCode;
-                });
-              },
-            ),
+        return SizedBox(
+          width: 500,
+          height: 600,
+          child: DeckFormFields(
+            moduleController: widget.moduleController,
+            moduleAltController: widget.moduleAltController,
+            subjectController: widget.subjectController,
+            examinersController: widget.examinersController,
+            selectedLanguage: widget.language,
+            selectedYear: widget.year,
+            selectedSemester: widget.semester,
+            onSemesterChange: (semester) {
+              setState(() {
+                widget.semester = semester;
+              });
+            },
+            onYearChange: (year) {
+              setState(() {
+                widget.year = int.parse(year);
+              });
+            },
+            onLanguageChange: (languageCode) {
+              setState(() {
+                widget.language = languageCode;
+              });
+            },
           ),
-        ));
+        );
       }),
     );
   }

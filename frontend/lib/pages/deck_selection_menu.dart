@@ -89,23 +89,17 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                         child: Align(
                           alignment: Alignment.topCenter,
                           child: Builder(builder: (context) {
-                            return Flexible(
-                              child: ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(maxWidth: 1200),
-                                child: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: DecksWithSearch(
-                                      decodedToken: decodedToken,
-                                      decks: decks,
-                                      refetchQuery: () {
-                                        setState(() {
-                                          refetch!();
-                                        });
-                                      },
-                                    )),
-                              ),
-                            );
+                            return SizedBox(
+                                width: 1200,
+                                child: DecksWithSearch(
+                                  decodedToken: decodedToken,
+                                  decks: decks,
+                                  refetchQuery: () {
+                                    setState(() {
+                                      refetch!();
+                                    });
+                                  },
+                                ));
                           }),
                         ),
                       );
