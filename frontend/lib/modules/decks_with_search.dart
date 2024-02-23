@@ -1,7 +1,6 @@
 import 'package:cards/views/deck_table.dart';
 import 'package:cards/views/simple_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:cards/views/deck_table_title.dart';
 import 'package:cards/constants.dart' as c;
 
 class DecksWithSearch extends StatefulWidget {
@@ -19,14 +18,6 @@ class DecksWithSearch extends StatefulWidget {
 }
 
 class _DecksWithSearch extends State<DecksWithSearch> {
-  final List<DataColumn> columns = [
-    const DataColumn(label: DeckTableTitle(text: c.Strings.module)),
-    const DataColumn(label: DeckTableTitle(text: c.Strings.prof)),
-    const DataColumn(label: DeckTableTitle(text: c.Strings.semester)),
-    const DataColumn(label: DeckTableTitle(text: c.Strings.size)),
-    const DataColumn(label: DeckTableTitle(text: c.Strings.language)),
-    const DataColumn(label: DeckTableTitle(text: c.Strings.options)),
-  ];
   List<Map<String, dynamic>> unauthorizedDecks = [];
   List<Map<String, dynamic>> filteredDecks = [];
 
@@ -47,6 +38,7 @@ class _DecksWithSearch extends State<DecksWithSearch> {
       filteredDecks = widget.decks.where((deck) {
         final module = deck["module"]?.toString() ?? "";
         final moduleAlt = deck["moduleAlt"]?.toString() ?? "";
+        final subject = deck["subject"]?.toString() ?? "";
         final examiners = deck["examiners"]?.toString() ?? "";
         final semesterYear =
             ("${deck["semester"]?.toString() ?? ""} ${deck["year"]?.toString() ?? ""}");
@@ -56,6 +48,7 @@ class _DecksWithSearch extends State<DecksWithSearch> {
 
         return (module.contains(pattern) ||
                 moduleAlt.contains(pattern) ||
+                subject.contains(pattern) ||
                 examiners.contains(pattern) ||
                 semesterYear.contains(pattern) ||
                 size.contains(pattern) ||

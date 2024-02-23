@@ -19,6 +19,7 @@ class SimpleTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       autofocus: autofocus,
+      cursorColor: Colors.grey,
       decoration: InputDecoration(
           labelText: label,
           hintText: hint,

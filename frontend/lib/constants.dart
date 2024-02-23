@@ -14,6 +14,12 @@ class Strings {
   Strings._();
   static const String appName = "Deserta";
 
+  static const String infoText = """
+      <p>Diese Plattform ist komplett Open Source und lebt von den Beiträgen vieler Studis sowie Menschen die diese ehrenamtlich warten. Wenn du hiervon profitieren kannst, freuen wir uns natürlich über deinen Beitrag indem du oben rechts auf den Upload Button klickts.
+      Wenn du Wünsche oder Anregungen hast, besuche doch gerne das <a href=github.com/FachschaftMathPhysInfo/cards>GitHub</a> Repository. Hier gilt Legitimation durch Machen: Wir freuen uns über jede Pull Request:)
+      Dein Fachschaft MathPhysInfo</p>
+  """;
+
   static const String module = "Modul";
   static const String moduleAlt = "Kurzform";
   static const String prof = "Dozent";

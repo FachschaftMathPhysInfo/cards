@@ -102,7 +102,7 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
       content: Builder(builder: (context) {
         return SizedBox(
           width: 500,
-          height: 600,
+          height: 400,
           child: DeckFormFields(
             moduleController: widget.moduleController,
             moduleAltController: widget.moduleAltController,

@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
 class DeckFormFields extends StatefulWidget {
-  final TextEditingController moduleController;
-  final TextEditingController moduleAltController;
-  final TextEditingController subjectController;
-  final TextEditingController examinersController;
+  final TextEditingController? moduleController;
+  final TextEditingController? moduleAltController;
+  final TextEditingController? subjectController;
+  final TextEditingController? examinersController;
   final Function(dynamic) onSemesterChange;
   final Function(dynamic) onYearChange;
   final Function(dynamic) onLanguageChange;
@@ -40,27 +40,27 @@ class _DeckFormFieldsState extends State<DeckFormFields> {
       children: [
         SimpleTextFormField(
           labelText: c.Strings.module,
-          controller: widget.moduleController,
+          controller: widget.moduleController!,
           autofocus: true,
           icon: const Icon(Icons.subject),
         ),
         const SizedBox(height: 10),
         SimpleTextFormField(
             labelText: c.Strings.moduleAlt,
-            controller: widget.moduleAltController,
+            controller: widget.moduleAltController!,
             maxLength: 6,
             helperText: c.Strings.moduleAltHelper,
             icon: const Icon(Icons.short_text)),
         const SizedBox(height: 10),
         SimpleTextFormField(
           labelText: c.Strings.subject,
-          controller: widget.subjectController,
+          controller: widget.subjectController!,
           icon: const Icon(Icons.school),
         ),
         const SizedBox(height: 10),
         SimpleTextFormField(
           labelText: c.Strings.prof,
-          controller: widget.examinersController,
+          controller: widget.examinersController!,
           icon: const Icon(Icons.person),
         ),
         const SizedBox(height: 10),
