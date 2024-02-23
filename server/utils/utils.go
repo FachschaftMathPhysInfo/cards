@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/jwtauth"
 	"github.com/go-ldap/ldap/v3"
@@ -94,4 +95,22 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{"jwt": *jwtToken}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func IsValidFileType(file *graphql.Upload) bool {
+    // Header of .apkg and .colpkg files
+    magic := []byte{0x50, 0x4B, 0x3, 0x4}
+
+    header := make([]byte, len(magic))
+    if _, err := file.File.Read(header); err != nil {
+        return false
+    }
+
+    for i := range magic {
+        if header[i] != magic[i] {
+            return false
+        }
+    }
+
+    return true
 }
