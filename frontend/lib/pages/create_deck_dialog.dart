@@ -45,7 +45,9 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
               },
               onCompleted: (dynamic resultData) {
                 Navigator.of(context).pop();
-                simpleAlert(context, c.Strings.uploadSuccessMessage);
+                if (resultData != null) {
+                  simpleAlert(context, c.Strings.uploadSuccessMessage);
+                }
                 logflob.info("$resultData created");
               },
             ),
@@ -89,7 +91,9 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
       ],
       title: Row(
         children: [
+          //title
           const Expanded(child: Text(c.Strings.contributeDeck)),
+          //close-button
           IconButton(
               onPressed: () {
                 if (moduleController.text.isNotEmpty ||
@@ -108,76 +112,80 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
         ],
       ),
       content: Builder(builder: (context) {
-        return SizedBox(
-          width: 500,
-          height: 600,
-          child: Column(
-            children: [
-              DeckFormFields(
-                moduleController: moduleController,
-                moduleAltController: moduleAltController,
-                subjectController: subjectController,
-                examinersController: examinersController,
-                selectedLanguage: selectedLanguage,
-                selectedYear: selectedYear,
-                selectedSemester: selectedSemester,
-                onSemesterChange: (semester) {
-                  setState(() {
-                    selectedSemester = semester;
-                  });
-                },
-                onYearChange: (year) {
-                  setState(() {
-                    selectedYear = int.parse(year);
-                  });
-                },
-                onLanguageChange: (languageCode) {
-                  setState(() {
-                    selectedLanguage = languageCode;
-                  });
-                },
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_deckFileResult == null) ...{
-                      FilledTextButton(
-                          text: c.Strings.upload,
-                          bgColor: c.Colors.turquoiseLight,
-                          fgColor: Colors.white,
-                          onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform
-                                .pickFiles(
-                                    type: FileType.custom,
-                                    allowedExtensions: ["apkg", "colpkg"]);
-                            if (result != null) {
-                              setState(() {
-                                _deckFileResult = result;
-                              });
-                            }
-                          }),
-                    } else ...{
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        style:
-                            IconButton.styleFrom(foregroundColor: c.Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            _deckFileResult = null;
-                          });
-                        },
-                      ),
-                      Text(_deckFileResult!.files.single.name),
-                    }
-                  ],
+        return SingleChildScrollView(
+          child: SizedBox(
+            width: 500,
+            height: 600,
+            child: Column(
+              children: [
+                //deck attributes
+                DeckFormFields(
+                  moduleController: moduleController,
+                  moduleAltController: moduleAltController,
+                  subjectController: subjectController,
+                  examinersController: examinersController,
+                  selectedLanguage: selectedLanguage,
+                  selectedYear: selectedYear,
+                  selectedSemester: selectedSemester,
+                  onSemesterChange: (semester) {
+                    setState(() {
+                      selectedSemester = semester;
+                    });
+                  },
+                  onYearChange: (year) {
+                    setState(() {
+                      selectedYear = int.parse(year);
+                    });
+                  },
+                  onLanguageChange: (languageCode) {
+                    setState(() {
+                      selectedLanguage = languageCode;
+                    });
+                  },
                 ),
-              ),
-              const Text(
-                c.Strings.userConsent,
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
+                //file upload
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_deckFileResult == null) ...{
+                        FilledTextButton(
+                            text: c.Strings.upload,
+                            bgColor: c.Colors.turquoiseLight,
+                            fgColor: Colors.white,
+                            onPressed: () async {
+                              FilePickerResult? result = await FilePicker.platform
+                                  .pickFiles(
+                                      type: FileType.custom,
+                                      allowedExtensions: ["apkg", "colpkg"]);
+                              if (result != null) {
+                                setState(() {
+                                  _deckFileResult = result;
+                                });
+                              }
+                            }),
+                      } else ...{
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          style:
+                              IconButton.styleFrom(foregroundColor: c.Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              _deckFileResult = null;
+                            });
+                          },
+                        ),
+                        Text(_deckFileResult!.files.single.name),
+                      }
+                    ],
+                  ),
+                ),
+                const Text(
+                  c.Strings.userConsent,
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         );
       }),
