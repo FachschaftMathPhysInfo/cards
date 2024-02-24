@@ -42,6 +42,7 @@ class _DeckFormFieldsState extends State<DeckFormFields> {
           labelText: c.Strings.module,
           controller: widget.moduleController!,
           autofocus: true,
+          maxLength: 35,
           icon: const Icon(Icons.subject),
         ),
         const SizedBox(height: 10),
@@ -55,6 +56,7 @@ class _DeckFormFieldsState extends State<DeckFormFields> {
         SimpleTextFormField(
           labelText: c.Strings.subject,
           controller: widget.subjectController!,
+          maxLength: 35,
           icon: const Icon(Icons.school),
         ),
         const SizedBox(height: 10),
@@ -62,6 +64,7 @@ class _DeckFormFieldsState extends State<DeckFormFields> {
           labelText: c.Strings.prof,
           controller: widget.examinersController!,
           icon: const Icon(Icons.person),
+          maxLength: 35,
         ),
         const SizedBox(height: 10),
         Row(

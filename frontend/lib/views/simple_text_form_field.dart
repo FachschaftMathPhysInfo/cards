@@ -7,14 +7,14 @@ class SimpleTextFormField extends StatelessWidget {
   final TextEditingController controller;
   final Icon icon;
   final bool autofocus;
-  final int maxLength;
+  final int? maxLength;
   final bool isPassword;
   const SimpleTextFormField(
       {required this.labelText,
       required this.controller,
       required this.icon,
       this.autofocus = false,
-      this.maxLength = 30,
+      this.maxLength,
       this.helperText = "",
       this.isPassword = false,
       super.key});
