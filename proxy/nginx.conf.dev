@@ -3,6 +3,7 @@ http {
     server {
         listen 80;
         server_name ${API_URL};
+        client_max_body_size 100M;
 
         location /login {
             proxy_pass http://server:8080/login;
