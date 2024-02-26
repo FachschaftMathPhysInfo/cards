@@ -1,4 +1,5 @@
 import 'package:cards/pages/deck_selection_menu.dart';
+import 'package:cards/utils/login.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
@@ -12,6 +13,7 @@ void main() {
     // ignore: avoid_print
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
+  setCookieFromUrl();
   runApp(const Cards());
 }
 

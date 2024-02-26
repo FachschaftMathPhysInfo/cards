@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  database:
+    image: mongo
+    volumes:
+      - metadata:/data/db
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - deckfiles:/go/src/deckfiles
+    depends_on:
+      - database
+
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    volumes:
+      - ./proxy/nginx.conf.dev:/etc/nginx/nginx.conf.template:ro
+    env_file:
+      - .env
+    ports:
+      - 8080:80
+    depends_on:
+      - server
+    command: /bin/bash -c "envsubst \"${API_URL}\" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 8081:80
+    depends_on:
+      - proxy
+
+volumes:
+  metadata:
+  deckfiles:

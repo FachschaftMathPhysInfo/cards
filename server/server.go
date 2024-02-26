@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -25,8 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.Background())
-
 	database := client.Database("cards")
+
 	gqlResolvers := graph.Resolver{DB: database}
 
 	router := chi.NewRouter()
@@ -42,7 +41,10 @@ func main() {
 	router.Use(middleware.Logger)
 
 	// Route for user login
-	router.Post("/login/", utils.HandleLogin)
+	router.Get("/login/", func(w http.ResponseWriter, r *http.Request) {
+		username := r.Header.Get("X-Username")
+		utils.ReturnJWTToken(username, w, r)
+	})
 
 	// Serve GraphQL endpoint
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &gqlResolvers}))
@@ -52,12 +54,8 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./deckfiles"))
 	router.Handle("/deckfiles/*", http.StripPrefix("/deckfiles/", fileServer))
 
-	if os.Getenv("ENVIRONMENT") != "production" {
-		// Serve GraphQL playground
-		router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-
-		log.Printf("Connect to http://localhost:%s/ for GraphQL playground", defaultPort)
-	}
+	// Serve GraphQL playground
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 
 	log.Printf("Server running on http://localhost:%s", defaultPort)
 	log.Fatal(http.ListenAndServe(":"+defaultPort, router))

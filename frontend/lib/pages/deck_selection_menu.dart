@@ -1,7 +1,7 @@
 import 'package:cards/main.dart';
 import 'package:cards/modules/decks_with_search.dart';
-import 'package:cards/pages/auth_prompt.dart';
 import 'package:cards/pages/create_deck_dialog.dart';
+import 'package:cards/utils/login.dart';
 import 'package:cards/utils/session.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
@@ -44,12 +44,7 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                         icon: const Icon(Icons.upload)),
                     if (decodedToken == null) ...[
                       IconButton(
-                          onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) {
-                                // ignore: prefer_const_constructors
-                                return AuthPrompt();
-                              }),
+                          onPressed: () => login(),
                           icon: const Icon(Icons.login))
                     ] else ...[
                       Text(decodedToken!["user"]),

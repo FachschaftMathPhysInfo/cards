@@ -10,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/jwtauth"
-	"github.com/go-ldap/ldap/v3"
 )
 
 // User represents a user in the system
@@ -56,32 +55,7 @@ func VerifyToken(tokenString string) error {
 	return nil
 }
 
-func HandleLogin(w http.ResponseWriter, r *http.Request) {
-	username, password, ok := r.BasicAuth()
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	if os.Getenv("ENVIRONMENT") == "production" {
-		// Authenticate with Kerberos via LDAP
-		ldapURL := os.Getenv("LDAP_URL")
-		l, err := ldap.DialURL(ldapURL)
-		if err != nil {
-			fmt.Println("LDAP dial error:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		defer l.Close()
-
-		err = l.Bind(username, password)
-		if err != nil {
-			fmt.Println("LDAP bind error:", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-	}
-
+func ReturnJWTToken(username string, w http.ResponseWriter, r *http.Request) {
 	user := &User{Username: username}
 	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("JWT_SECRET_KEY")), nil)
 	jwtToken, err := CreateJWTToken(user, tokenAuth)
@@ -91,26 +65,24 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return JWT token to caller
-	response := map[string]string{"jwt": *jwtToken}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	redirectUrl := fmt.Sprintf("http://%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
+	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
 
 func IsValidFileType(file *graphql.Upload) bool {
-    // Header of .apkg and .colpkg files
-    magic := []byte{0x50, 0x4B, 0x3, 0x4}
+	// Header of .apkg and .colpkg files
+	magic := []byte{0x50, 0x4B, 0x3, 0x4}
 
-    header := make([]byte, len(magic))
-    if _, err := file.File.Read(header); err != nil {
-        return false
-    }
+	header := make([]byte, len(magic))
+	if _, err := file.File.Read(header); err != nil {
+		return false
+	}
 
-    for i := range magic {
-        if header[i] != magic[i] {
-            return false
-        }
-    }
+	for i := range magic {
+		if header[i] != magic[i] {
+			return false
+		}
+	}
 
-    return true
+	return true
 }
