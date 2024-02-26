@@ -8,11 +8,9 @@ RUN go mod download
 COPY graph ./graph
 COPY server.go ./server.go
 COPY utils ./utils
-RUN mkdir ./deckfiles
 
 RUN CGO_ENABLED=0 go build -a -o graphql-server server.go
 
 FROM gcr.io/distroless/static-debian11
 COPY --from=build /go/src/graphql-server /
-COPY --from=build /go/src/deckfiles /deckfiles
 ENTRYPOINT ["/graphql-server"]

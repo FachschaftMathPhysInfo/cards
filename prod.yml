@@ -1,19 +1,22 @@
 version: '3'
 
+volumes:
+  metadata:
+  deckfiles:
+
 services:
   database:
     image: mongo
     volumes:
-      - metadata:/data/db
+      - ./metadata/:/data/db
 
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    env_file:
-      - .env
+    env_file: .env
     volumes:
-      - deckfiles:/go/src/deckfiles
+      - ./deckfiles/:/deckfiles
     depends_on:
       - database
 
@@ -24,8 +27,7 @@ services:
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf.template:ro
       - ${KRB_KEYTAB}:/etc/nginx/keytab:ro
-    env_file:
-      - .env
+    env_file: .env
     ports:
       - 8080:80
     depends_on:
@@ -40,7 +42,3 @@ services:
       - 8081:80
     depends_on:
       - proxy
-
-volumes:
-  metadata:
-  deckfiles:
