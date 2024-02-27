@@ -1,0 +1,34 @@
+ ldap_server ldap1 {
+     url ${LDAP_URL}
+     require valid_user;
+ }
+
+server {
+    listen 80;
+    server_name ${API_URL};
+
+    location /login {
+        auth_gss on;
+        auth_gss_keytab /etc/nginx/keytab;
+        auth_gss_realm ${KRB_REALM};
+	    auth_gss_service_name HTTP/${HOST_URL};
+
+        auth_ldap "Fachschaftslogin";
+        auth_ldap_servers ldap1;
+
+        proxy_pass http://server:8080/login;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Username $remote_user;
+    }
+
+    location /deckfiles {
+        proxy_pass http://server:8080/deckfiles;
+    }
+
+    location /graphql {
+        proxy_pass http://server:8080/graphql;
+    }
+}
