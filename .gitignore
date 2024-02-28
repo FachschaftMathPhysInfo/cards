@@ -3,7 +3,6 @@
 
 deckfiles/
 metadata/
-docker-compose.yml
 
 # Miscellaneous
 *.class

@@ -43,6 +43,9 @@ func main() {
 	// Route for user login
 	router.Get("/login/", func(w http.ResponseWriter, r *http.Request) {
 		username := r.Header.Get("X-Username")
+        if username == "" {
+            username = "testuser"
+        }
 		utils.ReturnJWTToken(username, w, r)
 	})
 
