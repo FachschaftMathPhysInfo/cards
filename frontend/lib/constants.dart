@@ -12,7 +12,7 @@ class Colors {
 
 class Strings {
   Strings._();
-  static const String appName = "Deserta";
+  static const String appName = "Stapel";
 
   static const String infoText = """
       <p>Diese Plattform ist komplett Open Source und lebt von den Beiträgen vieler Studis sowie Menschen die diese ehrenamtlich warten. Wenn du hiervon profitieren kannst, freuen wir uns natürlich über deinen Beitrag indem du oben rechts auf den Upload Button klickts.
@@ -67,7 +67,8 @@ class Strings {
 
 class GraphQL {
   GraphQL._();
-  static const String baseUrl = "http://localhost:8080";
+  static const String baseUrl =
+      "http://${const String.fromEnvironment("API_URL")}";
   static const String graphqlUrl = "$baseUrl/graphql";
   static const String deckfilesUrl = "$baseUrl/deckfiles/";
   static const String loginUrl = "$baseUrl/login/";

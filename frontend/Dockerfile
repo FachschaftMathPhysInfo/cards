@@ -24,7 +24,8 @@ RUN flutter config --enable-web
 RUN mkdir /app/
 COPY . /app/
 WORKDIR /app/
-RUN flutter build web --release --web-renderer html
+ARG API_URL=remote_api_url
+RUN flutter build web --release --web-renderer html --dart-define=API_URL=${API_URL}
 
 # Record the exposed port
 EXPOSE 80

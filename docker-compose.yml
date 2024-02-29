@@ -27,6 +27,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - API_URL=${API_URL}
+    env_file: .env
     ports:
       - 8081:80
     depends_on:
