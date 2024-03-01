@@ -8,6 +8,20 @@ class Colors {
   static const Color turquoiseDark = Color(0xFF54988c);
   static const Color orange = Color(0xFFf29642);
   static const Color lightGrey = Color(0xEDEDEDED);
+  static const Color darkGrey = Color.fromARGB(255, 32, 32, 32);
+}
+
+class Themes {
+  static final light = ThemeData(
+    scaffoldBackgroundColor: Colors.lightGrey,
+    brightness: Brightness.light,
+  );
+
+  static final dark = ThemeData(
+    scaffoldBackgroundColor: Colors.darkGrey,
+    colorScheme: const ColorScheme.dark(),
+    brightness: Brightness.dark,
+  );
 }
 
 class Strings {

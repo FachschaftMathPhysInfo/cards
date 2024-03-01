@@ -2,9 +2,10 @@ import 'package:cards/main.dart';
 import 'package:cards/modules/decks_with_search.dart';
 import 'package:cards/pages/create_deck_dialog.dart';
 import 'package:cards/utils/login.dart';
-import 'package:cards/utils/session.dart';
+import 'package:cards/utils/cookie.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
+import 'package:flutter/widgets.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class DeckSelectionMenu extends StatefulWidget {
@@ -16,6 +17,14 @@ class DeckSelectionMenu extends StatefulWidget {
 
 class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
   Map<String, dynamic>? decodedToken = getDecodedToken();
+
+  void _toggleTheme() {
+    Cards.theme.value =
+        Cards.theme.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    setCookie(
+        Cards.theme.value == ThemeMode.light ? "theme=light" : "theme=dark");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -42,6 +51,16 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
                     ],
                   ),
                   actions: [
+                    ValueListenableBuilder<ThemeMode>(
+                        valueListenable: Cards.theme,
+                        builder: (_, ThemeMode currentTheme, __) {
+                          return IconButton(
+                            onPressed: _toggleTheme,
+                            icon: Icon(currentTheme == ThemeMode.dark
+                                ? Icons.light_mode
+                                : Icons.dark_mode),
+                          );
+                        }),
                     IconButton(
                         onPressed: () => showDialog(
                             barrierDismissible: false,

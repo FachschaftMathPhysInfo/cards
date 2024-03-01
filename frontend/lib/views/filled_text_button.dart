@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class FilledTextButton extends StatelessWidget {
   final String text;
   final Color bgColor;
-  final Color fgColor;
+  final Color? fgColor;
   final VoidCallback? onPressed;
   const FilledTextButton(
       {required this.text,
       required this.bgColor,
-      required this.fgColor,
+      this.fgColor,
       required this.onPressed,
       super.key});
 

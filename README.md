@@ -4,7 +4,7 @@ Database for Anki Decks with reviewer functionality in the future
 ## dev ([todos](https://github.com/FachschaftMathPhysInfo/cards/issues/1))
 1. `docker compose build`
 2. `docker compose up -d && docker compose logs -f` (frontend: `localhost:8081`, backend: `localhost:8080`)
-3. (debugging the frontend: in `frontend/` execute `flutter run -d web-server`)
+3. (debugging the frontend: in `frontend/` execute `flutter run -d web-server --dart-define=API_URL="localhost:8080"`)
 
 ### frontend
 This app is build upon the framework [Flutter](https://flutter.dev/). 

@@ -9,7 +9,7 @@ void simpleAlert(BuildContext context, String text,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(text),
-          titleTextStyle: const TextStyle(fontSize: 20),
+          titleTextStyle: Theme.of(context).textTheme.headlineMedium,
           actionsAlignment: MainAxisAlignment.center,
           actions: <Widget>[
             if (isLeaving == null) ...[
@@ -19,18 +19,15 @@ void simpleAlert(BuildContext context, String text,
                 },
                 text: c.Strings.okay,
                 bgColor: c.Colors.blue,
-                fgColor: Colors.white,
               )
             ] else ...[
               FilledTextButton(
                   text: c.Strings.cancel,
                   bgColor: c.Colors.blue,
-                  fgColor: Colors.white,
                   onPressed: () => Navigator.of(context).pop()),
               FilledTextButton(
                   text: c.Strings.yes,
                   bgColor: c.Colors.red,
-                  fgColor: Colors.white,
                   onPressed: () {
                     isLeaving();
                     Navigator.of(context).pop();

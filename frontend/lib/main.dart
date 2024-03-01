@@ -1,5 +1,5 @@
 import 'package:cards/pages/deck_selection_menu.dart';
-import 'package:cards/utils/login.dart';
+import 'package:cards/utils/cookie.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
@@ -13,7 +13,9 @@ void main() {
     // ignore: avoid_print
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
-  setCookieFromUrl();
+  setTokenCookieFromUrl();
+  setThemeCookie();
+  logflob.shout(getValueOfCookie("theme"));
   runApp(const Cards());
 }
 
@@ -21,16 +23,25 @@ ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(cache: GraphQLCache(), link: HttpLink(c.GraphQL.graphqlUrl)));
 
 class Cards extends StatelessWidget {
+  static final ValueNotifier<ThemeMode> theme = ValueNotifier(
+      getValueOfCookie("theme") == "dark" ? ThemeMode.dark : ThemeMode.light);
   const Cards({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GraphQLProvider(
-      client: client,
-      child: MaterialApp(
-          title: c.Strings.appName,
-          theme: ThemeData(scaffoldBackgroundColor: c.Colors.lightGrey),
-          home: const DeckSelectionMenu()),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: theme,
+      builder: (_, ThemeMode currentTheme, __) {
+        return GraphQLProvider(
+          client: client,
+          child: MaterialApp(
+              title: c.Strings.appName,
+              theme: c.Themes.light,
+              darkTheme: c.Themes.dark,
+              themeMode: currentTheme,
+              home: const DeckSelectionMenu()),
+        );
+      },
     );
   }
 }
