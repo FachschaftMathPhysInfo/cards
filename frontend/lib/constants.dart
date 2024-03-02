@@ -47,7 +47,7 @@ class Strings {
       "Ugh, ein interner Fehler.\nBitte kontaktiere <root@mathphys.info>.";
 
   static const String editDeck = "Stapel bearbeiten";
-  static const String contributeDeck = "Stapel einreichen";
+  static const String contributeDeck = "Anki Stapel einreichen";
   static const String submit = "Einreichen";
   static const String save = "Speichern";
   static const String upload = "Datei hochladen";
