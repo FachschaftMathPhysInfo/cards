@@ -28,12 +28,6 @@ class Strings {
   Strings._();
   static const String appName = "Stapel";
 
-  static const String infoText = """
-      <p>Diese Plattform ist komplett Open Source und lebt von den Beiträgen vieler Studis sowie Menschen die diese ehrenamtlich warten. Wenn du hiervon profitieren kannst, freuen wir uns natürlich über deinen Beitrag indem du oben rechts auf den Upload Button klickts.
-      Wenn du Wünsche oder Anregungen hast, besuche doch gerne das <a href=github.com/FachschaftMathPhysInfo/cards>GitHub</a> Repository. Hier gilt Legitimation durch Machen: Wir freuen uns über jede Pull Request:)
-      Dein Fachschaft MathPhysInfo</p>
-  """;
-
   static const String module = "Modul";
   static const String moduleAlt = "Kurzform";
   static const String prof = "Dozent";
@@ -52,8 +46,8 @@ class Strings {
   static const String error =
       "Ugh, ein interner Fehler.\nBitte kontaktiere <root@mathphys.info>.";
 
-  static const String editDeck = "Deck bearbeiten";
-  static const String contributeDeck = "Deck einreichen";
+  static const String editDeck = "Stapel bearbeiten";
+  static const String contributeDeck = "Stapel einreichen";
   static const String submit = "Einreichen";
   static const String save = "Speichern";
   static const String upload = "Datei hochladen";
@@ -70,13 +64,15 @@ class Strings {
   static const String discardChanges = "Änderungen verwerfen";
   static const String leaveDialog = "Sicher? Alle Änderungen gehen verloren.";
   static const String uploadSuccessMessage =
-      "Danke!\nWir geben das Deck so bald wie möglich frei.";
+      "Danke!\nWir geben den Stapel so bald wie möglich frei.";
   static const String goingToBeDeleted = "wird gelöscht!";
 
-  static const String fsLogin = "Fachschaftslogin";
-  static const String username = "Nutzername";
-  static const String password = "Passwort";
-  static const String login = "Einloggen";
+  static const String login = "Fachschaftslogin";
+  static const String logout = "Abmelden";
+  static const String loggedInAs = "angemeldet als: ";
+  static const String github = "Source Code";
+  static const String githubUrl =
+      "https://github.com/FachschaftMathPhysInfo/cards";
 }
 
 class GraphQL {

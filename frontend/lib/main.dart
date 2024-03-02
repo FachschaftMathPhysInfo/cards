@@ -15,7 +15,6 @@ void main() {
   });
   setTokenCookieFromUrl();
   setThemeCookie();
-  logflob.shout(getValueOfCookie("theme"));
   runApp(const Cards());
 }
 

@@ -45,13 +45,17 @@ void setCookie(String cookie) {
   }
 }
 
+eraseCookie(String cookie) {
+  setCookie("$cookie=; Max-Age=0000000000");
+}
+
 void setTokenCookieFromUrl() {
   final url = Uri.base;
   final queryParams = url.queryParameters;
   var token = queryParams["token"];
 
   if (token != null) {
-    setCookie("jwt=$token; Path:/; SameSite=None");
+    setCookie("jwt=$token; Path:/; SameSite=Strict");
   }
 }
 

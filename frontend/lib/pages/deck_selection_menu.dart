@@ -1,11 +1,9 @@
 import 'package:cards/main.dart';
 import 'package:cards/modules/decks_with_search.dart';
-import 'package:cards/pages/create_deck_dialog.dart';
-import 'package:cards/utils/login.dart';
+import 'package:cards/modules/main_app_bar.dart';
 import 'package:cards/utils/cookie.dart';
 import 'package:flutter/material.dart';
 import 'package:cards/constants.dart' as c;
-import 'package:flutter/widgets.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class DeckSelectionMenu extends StatefulWidget {
@@ -17,13 +15,6 @@ class DeckSelectionMenu extends StatefulWidget {
 
 class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
   Map<String, dynamic>? decodedToken = getDecodedToken();
-
-  void _toggleTheme() {
-    Cards.theme.value =
-        Cards.theme.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    setCookie(
-        Cards.theme.value == ThemeMode.light ? "theme=light" : "theme=dark");
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,47 +30,7 @@ class _DeckSelectionMenuState extends State<DeckSelectionMenu> {
 
           return SelectionArea(
             child: Scaffold(
-                appBar: AppBar(
-                  title: Row(
-                    children: [
-                      SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: Image.network("assets/assets/logo.png")),
-                      const SizedBox(width: 10),
-                      const Text(c.Strings.appName),
-                    ],
-                  ),
-                  actions: [
-                    ValueListenableBuilder<ThemeMode>(
-                        valueListenable: Cards.theme,
-                        builder: (_, ThemeMode currentTheme, __) {
-                          return IconButton(
-                            onPressed: _toggleTheme,
-                            icon: Icon(currentTheme == ThemeMode.dark
-                                ? Icons.light_mode
-                                : Icons.dark_mode),
-                          );
-                        }),
-                    IconButton(
-                        onPressed: () => showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              // ignore: prefer_const_constructors
-                              return CreateDeckDialog();
-                            }),
-                        icon: const Icon(Icons.upload)),
-                    if (decodedToken == null) ...[
-                      IconButton(
-                          onPressed: () => login(),
-                          icon: const Icon(Icons.login))
-                    ] else ...[
-                      Text(decodedToken!["user"]),
-                      const SizedBox(width: 20)
-                    ]
-                  ],
-                ),
+                appBar: MainAppBar(decodedToken: decodedToken),
                 body: Query(
                     options: QueryOptions(document: gql(c.GraphQL.fetchDecks)),
                     builder: (QueryResult result, {fetchMore, refetch}) {

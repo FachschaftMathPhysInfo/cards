@@ -37,23 +37,23 @@ class _DecksWithSearch extends State<DecksWithSearch> {
   void filterDecks(String pattern) {
     setState(() {
       filteredDecks = widget.decks.where((deck) {
-        final module = deck["module"]?.toString() ?? "";
-        final moduleAlt = deck["moduleAlt"]?.toString() ?? "";
-        final subject = deck["subject"]?.toString() ?? "";
-        final examiners = deck["examiners"]?.toString() ?? "";
+        final module = deck["module"]?.toString().toLowerCase() ?? "";
+        final moduleAlt = deck["moduleAlt"]?.toString().toLowerCase() ?? "";
+        final subject = deck["subject"]?.toString().toLowerCase() ?? "";
+        final examiners = deck["examiners"]?.toString().toLowerCase() ?? "";
         final semesterYear =
-            ("${deck["semester"]?.toString() ?? ""} ${deck["year"]?.toString() ?? ""}");
-        final size = deck["size"]?.toString() ?? "";
-        final language = deck["language"]?.toString() ?? "";
+            ("${deck["semester"]?.toString().toLowerCase() ?? ""} ${deck["year"]?.toString().toLowerCase() ?? ""}");
+        final size = deck["size"]?.toString().toLowerCase() ?? "";
+        final language = deck["language"]?.toString().toLowerCase() ?? "";
         final isValid = deck["isValid"] ?? false;
 
-        return (module.contains(pattern) ||
-                moduleAlt.contains(pattern) ||
-                subject.contains(pattern) ||
-                examiners.contains(pattern) ||
-                semesterYear.contains(pattern) ||
-                size.contains(pattern) ||
-                language.contains(pattern)) &&
+        return (module.contains(pattern.toLowerCase()) ||
+                moduleAlt.contains(pattern.toLowerCase()) ||
+                subject.contains(pattern.toLowerCase()) ||
+                examiners.contains(pattern.toLowerCase()) ||
+                semesterYear.contains(pattern.toLowerCase()) ||
+                size.contains(pattern.toLowerCase()) ||
+                language.contains(pattern.toLowerCase())) &&
             isValid;
       }).toList();
     });

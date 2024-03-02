@@ -102,30 +102,32 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
       content: Builder(builder: (context) {
         return SizedBox(
           width: 500,
-          height: 400,
-          child: DeckFormFields(
-            moduleController: widget.moduleController,
-            moduleAltController: widget.moduleAltController,
-            subjectController: widget.subjectController,
-            examinersController: widget.examinersController,
-            selectedLanguage: widget.language,
-            selectedYear: widget.year,
-            selectedSemester: widget.semester,
-            onSemesterChange: (semester) {
-              setState(() {
-                widget.semester = semester;
-              });
-            },
-            onYearChange: (year) {
-              setState(() {
-                widget.year = int.parse(year);
-              });
-            },
-            onLanguageChange: (languageCode) {
-              setState(() {
-                widget.language = languageCode;
-              });
-            },
+          height: 420,
+          child: SingleChildScrollView(
+            child: DeckFormFields(
+              moduleController: widget.moduleController,
+              moduleAltController: widget.moduleAltController,
+              subjectController: widget.subjectController,
+              examinersController: widget.examinersController,
+              selectedLanguage: widget.language,
+              selectedYear: widget.year,
+              selectedSemester: widget.semester,
+              onSemesterChange: (semester) {
+                setState(() {
+                  widget.semester = semester;
+                });
+              },
+              onYearChange: (year) {
+                setState(() {
+                  widget.year = int.parse(year);
+                });
+              },
+              onLanguageChange: (languageCode) {
+                setState(() {
+                  widget.language = languageCode;
+                });
+              },
+            ),
           ),
         );
       }),

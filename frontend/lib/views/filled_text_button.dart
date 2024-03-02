@@ -5,12 +5,14 @@ class FilledTextButton extends StatelessWidget {
   final Color bgColor;
   final Color? fgColor;
   final VoidCallback? onPressed;
+  final double borderRadius;
   const FilledTextButton(
       {required this.text,
       required this.bgColor,
       this.fgColor,
       required this.onPressed,
-      super.key});
+      super.key,
+      this.borderRadius = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +20,8 @@ class FilledTextButton extends StatelessWidget {
         style: TextButton.styleFrom(
           backgroundColor: bgColor,
           foregroundColor: fgColor,
-          shape: const RoundedRectangleBorder(),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(borderRadius))),
         ),
         onPressed: onPressed,
         child: Text(

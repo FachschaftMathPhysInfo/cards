@@ -91,9 +91,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
       ],
       title: Row(
         children: [
-          //title
           const Expanded(child: Text(c.Strings.contributeDeck)),
-          //close-button
           IconButton(
               onPressed: () {
                 if (moduleController.text.isNotEmpty ||
@@ -154,8 +152,8 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                             bgColor: c.Colors.turquoiseLight,
                             fgColor: Colors.white,
                             onPressed: () async {
-                              FilePickerResult? result = await FilePicker.platform
-                                  .pickFiles(
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles(
                                       type: FileType.custom,
                                       allowedExtensions: ["apkg", "colpkg"]);
                               if (result != null) {
@@ -167,8 +165,8 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                       } else ...{
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          style:
-                              IconButton.styleFrom(foregroundColor: c.Colors.red),
+                          style: IconButton.styleFrom(
+                              foregroundColor: c.Colors.red),
                           onPressed: () {
                             setState(() {
                               _deckFileResult = null;
