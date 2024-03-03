@@ -30,7 +30,7 @@ class Strings {
 
   static const String module = "Modul";
   static const String moduleAlt = "Kurzform";
-  static const String prof = "Dozent";
+  static const String prof = "Dozent/-in";
   static const String semester = "Semester";
   static const String year = "Jahr";
   static const String size = "Größe";
@@ -73,6 +73,9 @@ class Strings {
   static const String github = "Source Code";
   static const String githubUrl =
       "https://github.com/FachschaftMathPhysInfo/cards";
+  static const String darkMode = "Dunkelmodus";
+  static const String lightMode = "Hellmodus";
+  static const String menu = "Menü";
 }
 
 class GraphQL {

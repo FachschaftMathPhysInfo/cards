@@ -56,7 +56,7 @@ class _DeckFormFieldsState extends State<DeckFormFields> {
         SimpleTextFormField(
           labelText: c.Strings.subject,
           controller: widget.subjectController!,
-          maxLength: 35,
+          maxLength: 45,
           icon: const Icon(Icons.school),
         ),
         const SizedBox(height: 10),

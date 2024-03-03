@@ -39,8 +39,6 @@ class DeckTable extends StatelessWidget {
           DataColumn(label: DeckTableTitle(text: c.Strings.subject)),
           DataColumn(label: DeckTableTitle(text: c.Strings.prof)),
           DataColumn(label: DeckTableTitle(text: c.Strings.semester)),
-          // TODO Deck data extraction and display basic information
-          // DataColumn(label: DeckTableTitle(text: c.Strings.size)),
           DataColumn(label: DeckTableTitle(text: c.Strings.language)),
           DataColumn(label: DeckTableTitle(text: c.Strings.options)),
         ],
@@ -61,8 +59,6 @@ class DeckTable extends StatelessWidget {
                   DataCell(Text(deck["examiners"]?.toString() ?? "")),
                   DataCell(Text(
                       ("${deck["semester"]?.toString() ?? ""} ${deck["year"]?.toString() ?? ""}"))),
-
-                  // DataCell(Text(deck["size"]?.toString() ?? "")),
                   DataCell(Flag(languageCode: deck["language"])),
                   DataCell(Row(
                     children: [
@@ -74,12 +70,13 @@ class DeckTable extends StatelessWidget {
                               color: c.Colors.orange),
                           onPressed: () {
                             String hash = deck["hash"];
-                            String module = deck["module"];
-                            String subject = deck["subject"];
+                            String moduleAlt = deck["moduleAlt"];
+                            String semester = deck["semester"];
+                            String year = deck["year"].toString();
                             String fileType = deck["fileType"];
                             String filePath = c.GraphQL.deckfilesUrl;
                             download("$filePath$hash$fileType",
-                                "$module-$subject$fileType");
+                                "$moduleAlt-$semester$year$fileType");
                           }),
                       if (decodedToken != null) ...[
                         //

@@ -36,6 +36,9 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
             valueListenable: Cards.theme,
             builder: (_, ThemeMode currentTheme, __) {
               return IconButton(
+                tooltip: currentTheme == ThemeMode.dark
+                    ? c.Strings.lightMode
+                    : c.Strings.darkMode,
                 onPressed: _toggleTheme,
                 icon: Icon(currentTheme == ThemeMode.dark
                     ? Icons.light_mode
@@ -43,6 +46,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
               );
             }),
         IconButton(
+            tooltip: c.Strings.contributeDeck,
             onPressed: () => showDialog(
                 barrierDismissible: false,
                 context: context,
@@ -52,6 +56,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
                 }),
             icon: const Icon(Icons.upload)),
         PopupMenuButton(
+            tooltip: c.Strings.menu,
             itemBuilder: (BuildContext context) => <PopupMenuEntry>[
                   PopupMenuItem(
                       onTap: () => openUrl(c.Strings.githubUrl, newTab: true),
