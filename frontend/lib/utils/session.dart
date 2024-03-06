@@ -2,7 +2,7 @@ import 'package:cards/constants.dart' as c;
 import 'package:cards/utils/cookie.dart';
 import 'package:cards/utils/web.dart';
 
-Future<void> login() async {
+void login() {
   openUrl(c.GraphQL.loginUrl);
 }
 

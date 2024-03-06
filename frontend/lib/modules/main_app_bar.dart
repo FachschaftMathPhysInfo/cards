@@ -14,8 +14,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   void _toggleTheme() {
     Cards.theme.value =
         Cards.theme.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    setCookie(
-        Cards.theme.value == ThemeMode.light ? "theme=light" : "theme=dark");
+    setThemeCookie(Cards.theme.value == ThemeMode.light ? "light" : "dark");
   }
 
   @override

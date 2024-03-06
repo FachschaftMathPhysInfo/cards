@@ -37,16 +37,16 @@ Map<String, dynamic>? getDecodedToken() {
   return null;
 }
 
-void setCookie(String cookie) {
+void setCookie(String key, String val, int exp) {
   try {
-    html.document.cookie = cookie;
+    html.document.cookie = "$key=$val; Path:/; Max-Age=$exp; SameSite=Strict";
   } catch (e) {
     logflob.shout("error during setting cookie: $e");
   }
 }
 
 eraseCookie(String cookie) {
-  setCookie("$cookie=; Max-Age=0000000000");
+  setCookie(cookie, "", 0000000000);
 }
 
 void setTokenCookieFromUrl() {
@@ -55,13 +55,16 @@ void setTokenCookieFromUrl() {
   var token = queryParams["token"];
 
   if (token != null) {
-    setCookie("jwt=$token; Path:/; SameSite=Strict");
+    Map<String, dynamic> decodedToken = Jwt.parseJwt(token);
+    int exp = decodedToken["exp"] ~/ 100000;
+    setCookie("jwt", token, exp);
   }
 }
 
-void setThemeCookie() {
-  if (getValueOfCookie("theme") == null) {
-    String theme = ThemeMode.system == ThemeMode.dark ? "dark" : "light";
-    setCookie("theme=$theme");
-  }
+void setThemeCookie([String? theme]) {
+  theme ??= ThemeMode.system == ThemeMode.dark ? "dark" : "light";
+  int exp =
+      DateTime.now().add(const Duration(days: 365)).millisecondsSinceEpoch ~/
+          1000000;
+  setCookie("theme", theme, exp);
 }

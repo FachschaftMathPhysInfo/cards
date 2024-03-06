@@ -65,7 +65,7 @@ func ReturnJWTToken(username string, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectUrl := fmt.Sprintf("http://%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
+	redirectUrl := fmt.Sprintf("https://%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
 	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
 

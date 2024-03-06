@@ -81,7 +81,7 @@ class Strings {
 class GraphQL {
   GraphQL._();
   static const String baseUrl =
-      "http://${const String.fromEnvironment("API_URL")}";
+      "https://${const String.fromEnvironment("API_URL")}";
   static const String graphqlUrl = "$baseUrl/graphql";
   static const String deckfilesUrl = "$baseUrl/deckfiles/";
   static const String loginUrl = "$baseUrl/login/";
