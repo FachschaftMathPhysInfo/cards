@@ -62,9 +62,11 @@ void setTokenCookieFromUrl() {
 }
 
 void setThemeCookie([String? theme]) {
-  theme ??= ThemeMode.system == ThemeMode.dark ? "dark" : "light";
+  if (theme == null && getValueOfCookie("theme") == null) {
+    theme = ThemeMode.system == ThemeMode.dark ? "dark" : "light";
+  }
   int exp =
       DateTime.now().add(const Duration(days: 365)).millisecondsSinceEpoch ~/
           1000000;
-  setCookie("theme", theme, exp);
+  if (theme != null) setCookie("theme", theme, exp);
 }
