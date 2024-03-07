@@ -65,7 +65,7 @@ func ReturnJWTToken(username string, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectUrl := fmt.Sprintf("https://%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
+	redirectUrl := fmt.Sprintf("%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
 	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
 
@@ -82,6 +82,11 @@ func IsValidFileType(file *graphql.Upload) bool {
 		if header[i] != magic[i] {
 			return false
 		}
+	}
+
+	// Seek back to the beginning of the file
+	if _, err := file.File.Seek(0, 0); err != nil {
+		return false
 	}
 
 	return true

@@ -25,13 +25,13 @@ import (
 func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error) {
 	cardDecks := r.DB.Collection("cardDecks")
 
-    if !utils.IsValidFileType(input.File) {
-        return nil, fmt.Errorf("Not a valid file type")
-    }
-
 	// hash and copy to the buffer at the same time
 	fileBuf := &bytes.Buffer{}
 	tee := io.TeeReader(input.File.File, fileBuf)
+
+	if !utils.IsValidFileType(input.File) {
+		return nil, fmt.Errorf("not a valid file type")
+	}
 
 	// generate the hash of the input file
 	fileHash := sha256.New()
