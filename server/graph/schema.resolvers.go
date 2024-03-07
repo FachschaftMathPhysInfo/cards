@@ -93,7 +93,12 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 }
 
 // UpdateDeck is the resolver for the updateDeck field.
-func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, input model.NewDeck) (*string, error) {
+func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, input model.NewDeck, jwtToken string) (*string, error) {
+	err := utils.VerifyToken(jwtToken)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %s", err)
+	}
+
 	cardDecks := r.DB.Collection("cardDecks")
 
 	updatedDeck := model.NewDeck{
@@ -115,7 +120,12 @@ func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, input mo
 }
 
 // DeleteDeck is the resolver for the deleteDeck field.
-func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string, error) {
+func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string, jwtToken string) (*string, error) {
+	err := utils.VerifyToken(jwtToken)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %s", err)
+	}
+
 	cardDecks := r.DB.Collection("cardDecks")
 	filter := bson.D{{Key: "hash", Value: hash}}
 	res, _ := cardDecks.DeleteOne(ctx, filter)
@@ -138,7 +148,12 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (*string
 }
 
 // SetValid is the resolver for the setValid field.
-func (r *mutationResolver) SetValid(ctx context.Context, hash string) (*string, error) {
+func (r *mutationResolver) SetValid(ctx context.Context, hash string, jwtToken string) (*string, error) {
+	err := utils.VerifyToken(jwtToken)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %s", err)
+	}
+
 	cardDecks := r.DB.Collection("cardDecks")
 	filter := bson.D{{Key: "hash", Value: hash}}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "isValid", Value: true}}}}

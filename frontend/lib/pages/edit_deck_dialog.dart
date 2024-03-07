@@ -10,6 +10,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 class EditDeckDialog extends StatefulWidget {
   final Function refetchQuery;
   final String hash;
+  final String jwtToken;
   final TextEditingController moduleController = TextEditingController();
   final TextEditingController moduleAltController = TextEditingController();
   final TextEditingController subjectController = TextEditingController();
@@ -28,7 +29,8 @@ class EditDeckDialog extends StatefulWidget {
       required this.year,
       required this.language,
       required this.hash,
-      required this.refetchQuery}) {
+      required this.refetchQuery,
+      required this.jwtToken}) {
     moduleController.text = module;
     moduleAltController.text = moduleAlt;
     subjectController.text = subject;
@@ -70,7 +72,8 @@ class _EditDeckDialogState extends State<EditDeckDialog> {
                     "language": widget.language,
                     "semester": widget.semester,
                     "year": widget.year,
-                  }
+                  },
+                  "jwtToken": widget.jwtToken
                 });
               }
 

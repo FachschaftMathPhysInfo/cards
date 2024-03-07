@@ -31,7 +31,7 @@ input NewDeck {
 
 type Mutation {
   createDeck(input: NewDeck!): Deck!
-  updateDeck(hash: String!, input: NewDeck!): String
-  deleteDeck(hash: String!): String
-  setValid(hash: String!): String
+  updateDeck(hash: String!, input: NewDeck!, jwtToken: String!): String
+  deleteDeck(hash: String!, jwtToken: String!): String
+  setValid(hash: String!, jwtToken: String!): String
 }

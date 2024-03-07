@@ -62,9 +62,9 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateDeck func(childComplexity int, input model.NewDeck) int
-		DeleteDeck func(childComplexity int, hash string) int
-		SetValid   func(childComplexity int, hash string) int
-		UpdateDeck func(childComplexity int, hash string, input model.NewDeck) int
+		DeleteDeck func(childComplexity int, hash string, jwtToken string) int
+		SetValid   func(childComplexity int, hash string, jwtToken string) int
+		UpdateDeck func(childComplexity int, hash string, input model.NewDeck, jwtToken string) int
 	}
 
 	Query struct {
@@ -75,9 +75,9 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error)
-	UpdateDeck(ctx context.Context, hash string, input model.NewDeck) (*string, error)
-	DeleteDeck(ctx context.Context, hash string) (*string, error)
-	SetValid(ctx context.Context, hash string) (*string, error)
+	UpdateDeck(ctx context.Context, hash string, input model.NewDeck, jwtToken string) (*string, error)
+	DeleteDeck(ctx context.Context, hash string, jwtToken string) (*string, error)
+	SetValid(ctx context.Context, hash string, jwtToken string) (*string, error)
 }
 type QueryResolver interface {
 	Decks(ctx context.Context) ([]*model.Deck, error)
@@ -195,7 +195,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteDeck(childComplexity, args["hash"].(string)), true
+		return e.complexity.Mutation.DeleteDeck(childComplexity, args["hash"].(string), args["jwtToken"].(string)), true
 
 	case "Mutation.setValid":
 		if e.complexity.Mutation.SetValid == nil {
@@ -207,7 +207,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SetValid(childComplexity, args["hash"].(string)), true
+		return e.complexity.Mutation.SetValid(childComplexity, args["hash"].(string), args["jwtToken"].(string)), true
 
 	case "Mutation.updateDeck":
 		if e.complexity.Mutation.UpdateDeck == nil {
@@ -219,7 +219,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateDeck(childComplexity, args["hash"].(string), args["input"].(model.NewDeck)), true
+		return e.complexity.Mutation.UpdateDeck(childComplexity, args["hash"].(string), args["input"].(model.NewDeck), args["jwtToken"].(string)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
@@ -392,6 +392,15 @@ func (ec *executionContext) field_Mutation_deleteDeck_args(ctx context.Context, 
 		}
 	}
 	args["hash"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["jwtToken"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["jwtToken"] = arg1
 	return args, nil
 }
 
@@ -407,6 +416,15 @@ func (ec *executionContext) field_Mutation_setValid_args(ctx context.Context, ra
 		}
 	}
 	args["hash"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["jwtToken"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["jwtToken"] = arg1
 	return args, nil
 }
 
@@ -431,6 +449,15 @@ func (ec *executionContext) field_Mutation_updateDeck_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["jwtToken"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["jwtToken"] = arg2
 	return args, nil
 }
 
@@ -1012,7 +1039,7 @@ func (ec *executionContext) _Mutation_updateDeck(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["hash"].(string), fc.Args["input"].(model.NewDeck))
+		return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["hash"].(string), fc.Args["input"].(model.NewDeck), fc.Args["jwtToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1064,7 +1091,7 @@ func (ec *executionContext) _Mutation_deleteDeck(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteDeck(rctx, fc.Args["hash"].(string))
+		return ec.resolvers.Mutation().DeleteDeck(rctx, fc.Args["hash"].(string), fc.Args["jwtToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1116,7 +1143,7 @@ func (ec *executionContext) _Mutation_setValid(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SetValid(rctx, fc.Args["hash"].(string))
+		return ec.resolvers.Mutation().SetValid(rctx, fc.Args["hash"].(string), fc.Args["jwtToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -117,18 +117,18 @@ class GraphQL {
     }
   """;
   static const String updateDeck = """
-    mutation UpdateDeck(\$hash: String!, \$input: NewDeck!) {
-      updateDeck(hash: \$hash, input: \$input)
+    mutation UpdateDeck(\$hash: String!, \$input: NewDeck!, \$jwtToken: String!) {
+      updateDeck(hash: \$hash, input: \$input, jwtToken: \$jwtToken)
     }
   """;
   static const String deleteDeck = """
-    mutation DeleteDeck(\$hash: String!) {
-      deleteDeck(hash: \$hash)
+    mutation DeleteDeck(\$hash: String!, \$jwtToken: String!) {
+      deleteDeck(hash: \$hash, jwtToken: \$jwtToken)
     }
   """;
   static const String setValid = """
-    mutation SetValid(\$hash: String!) {
-      setValid(hash: \$hash)
+    mutation SetValid(\$hash: String!, \$jwtToken: String!) {
+      setValid(hash: \$hash, jwtToken: \$jwtToken)
     }
   """;
 }

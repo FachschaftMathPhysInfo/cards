@@ -90,6 +90,7 @@ class DeckTable extends StatelessWidget {
                                   // ignore: prefer_const_constructors
                                   return EditDeckDialog(
                                       refetchQuery: refetchQuery,
+                                      jwtToken: decodedToken!["jwt"],
                                       module: deck["module"],
                                       moduleAlt: deck["moduleAlt"],
                                       subject: deck["subject"],
@@ -117,8 +118,10 @@ class DeckTable extends StatelessWidget {
                               builder: (RunMutation setValidMutation,
                                   QueryResult? deleteResult) {
                                 setValid() {
-                                  setValidMutation(
-                                      {"hash": deck["hash"].toString()});
+                                  setValidMutation({
+                                    "hash": deck["hash"].toString(),
+                                    "jwtToken": decodedToken!["jwt"]
+                                  });
                                 }
 
                                 return IconButton(
@@ -144,8 +147,10 @@ class DeckTable extends StatelessWidget {
                             builder: (RunMutation deleteDeckMutation,
                                 QueryResult? deleteResult) {
                               deleteDeck() {
-                                deleteDeckMutation(
-                                    {"hash": deck["hash"].toString()});
+                                deleteDeckMutation({
+                                  "hash": deck["hash"].toString(),
+                                  "jwtToken": decodedToken!["jwt"]
+                                });
                               }
 
                               return IconButton(
