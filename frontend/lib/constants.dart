@@ -80,8 +80,7 @@ class Strings {
 
 class GraphQL {
   GraphQL._();
-  static const String baseUrl =
-      "https://${const String.fromEnvironment("API_URL")}";
+  static const String baseUrl = String.fromEnvironment("API_URL");
   static const String graphqlUrl = "$baseUrl/graphql";
   static const String deckfilesUrl = "$baseUrl/deckfiles/";
   static const String loginUrl = "$baseUrl/login/";
