@@ -36,7 +36,6 @@ class DeckTable extends StatelessWidget {
       child: DataTable(
         columns: const <DataColumn>[
           DataColumn(label: DeckTableTitle(text: c.Strings.module)),
-          DataColumn(label: DeckTableTitle(text: c.Strings.subject)),
           DataColumn(label: DeckTableTitle(text: c.Strings.prof)),
           DataColumn(label: DeckTableTitle(text: c.Strings.semester)),
           DataColumn(label: DeckTableTitle(text: c.Strings.language)),
@@ -55,7 +54,6 @@ class DeckTable extends StatelessWidget {
                       ),
                     ],
                   )),
-                  DataCell(Text(deck["subject"]?.toString() ?? "")),
                   DataCell(Text(deck["examiners"]?.toString() ?? "")),
                   DataCell(Text(
                       ("${deck["semester"]?.toString() ?? ""} ${deck["year"]?.toString() ?? ""}"))),
