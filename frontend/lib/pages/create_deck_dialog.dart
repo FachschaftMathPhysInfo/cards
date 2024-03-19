@@ -31,6 +31,7 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
   String selectedLanguage = "de";
 
   FilePickerResult? _deckFileResult;
+  bool submitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +72,10 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                 });
               }
 
+              if (submitted) {
+                return const CircularProgressIndicator();
+              }
+
               return SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -83,7 +88,12 @@ class _CreateDeckDialogState extends State<CreateDeckDialog> {
                                   moduleController.text.isNotEmpty &&
                                   moduleAltController.text.isNotEmpty &&
                                   examinersController.text.isNotEmpty
-                              ? () => createDeck()
+                              ? () {
+                                  setState(() {
+                                    submitted = true;
+                                  });
+                                  createDeck();
+                                }
                               : () =>
                                   simpleAlert(context, c.Strings.submitError)
                           : null));
