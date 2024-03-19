@@ -14,6 +14,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
 	"github.com/FachschaftMathPhysInfo/cards/server/utils"
@@ -86,6 +87,15 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, input model.NewDeck) 
 
 	err = destFile.Sync()
 	if err != nil {
+		return nil, err
+	}
+
+	subject := "Neuer Stapel eingereicht!"
+	body := fmt.Sprintf("Ein neuer Stapel wurde eingereicht:\n%s bei %s aus dem %s %s.\nBitte zeitnah autoristieren! <3\n%s/login",
+		input.Module, *input.Examiners, *input.Semester, strconv.Itoa(*input.Year), os.Getenv("API_URL"))
+	err = utils.SendEmail(subject, body)
+	if err != nil {
+		log.Printf("email error: %s", err)
 		return nil, err
 	}
 
