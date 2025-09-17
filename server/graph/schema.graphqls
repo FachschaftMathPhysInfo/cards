@@ -1,37 +1,37 @@
 scalar Upload
 
+directive @auth on FIELD_DEFINITION
+
 type Deck {
-  subject: String
+  subject: String!
   module: String!
-  moduleAlt: String
-  examiners: String
-  language: String
-  semester: String
-  year: Int
+  moduleAlt: String!
+  examiners: String!
+  language: String!
+  semester: String!
+  year: Int!
   hash: String!
-  fileType: String
+  fileType: String!
   isValid: Boolean!
 }
 
 type Query {
   decks: [Deck!]!
-  isValidToken(jwtToken: String!): Boolean!
 }
 
 input NewDeck {
-  subject: String
+  subject: String!
   module: String!
-  moduleAlt: String
-  examiners: String
-  language: String
-  semester: String
-  year: Int
-  file: Upload
+  moduleAlt: String!
+  examiners: String!
+  language: String!
+  semester: String!
+  year: Int!
 }
 
 type Mutation {
-  createDeck(input: NewDeck!): Deck!
-  updateDeck(hash: String!, input: NewDeck!, jwtToken: String!): String
-  deleteDeck(hash: String!, jwtToken: String!): String
-  setValid(hash: String!, jwtToken: String!): String
+  createDeck(meta: NewDeck!, file: Upload!): String!
+  updateDeck(hash: String!, meta: NewDeck!): String! @auth
+  deleteDeck(hash: String!): String! @auth
+  setValid(hash: String!): String! @auth
 }

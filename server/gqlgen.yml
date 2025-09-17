@@ -85,3 +85,9 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Deck:
+    model:
+      - github.com/FachschaftMathPhysInfo/cards/server/models.Deck
+  NewDeck:
+    model:
+      - github.com/FachschaftMathPhysInfo/cards/server/models.Deck

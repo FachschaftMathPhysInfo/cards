@@ -2,35 +2,7 @@
 
 package model
 
-import (
-	"github.com/99designs/gqlgen/graphql"
-)
-
-type Deck struct {
-	Subject   *string `json:"subject,omitempty"`
-	Module    string  `json:"module"`
-	ModuleAlt *string `json:"moduleAlt,omitempty"`
-	Examiners *string `json:"examiners,omitempty"`
-	Language  *string `json:"language,omitempty"`
-	Semester  *string `json:"semester,omitempty"`
-	Year      *int    `json:"year,omitempty"`
-	Hash      string  `json:"hash"`
-	FileType  *string `json:"fileType,omitempty"`
-	IsValid   bool    `json:"isValid"`
-}
-
 type Mutation struct {
-}
-
-type NewDeck struct {
-	Subject   *string         `json:"subject,omitempty"`
-	Module    string          `json:"module"`
-	ModuleAlt *string         `json:"moduleAlt,omitempty"`
-	Examiners *string         `json:"examiners,omitempty"`
-	Language  *string         `json:"language,omitempty"`
-	Semester  *string         `json:"semester,omitempty"`
-	Year      *int            `json:"year,omitempty"`
-	File      *graphql.Upload `json:"file,omitempty"`
 }
 
 type Query struct {

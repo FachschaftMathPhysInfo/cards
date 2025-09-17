@@ -3,6 +3,7 @@
 
 deckfiles/
 metadata/
+storage/
 
 # Miscellaneous
 *.class
