@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -77,6 +79,9 @@ func main() {
 	// Serve deck files
 	fileServer := http.FileServer(http.Dir("./deckfiles"))
 	router.Handle("/deckfiles/*", http.StripPrefix("/deckfiles/", fileServer))
+
+	frontendUrl, _ := url.Parse("http://localhost:3000")
+	router.Handle("/*", httputil.NewSingleHostReverseProxy(frontendUrl))
 
 	// Serve GraphQL playground
 	router.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))

@@ -1,0 +1,14 @@
+query decks {
+  decks {
+    subject
+    module
+    moduleAlt
+    examiners
+    language
+    semester
+    year
+    hash
+    fileType
+    isValid
+  }
+}
