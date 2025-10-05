@@ -69,7 +69,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Decks func(childComplexity int) int
+		Decks func(childComplexity int, search *string, semester *string, year *int) int
 	}
 }
 
@@ -80,7 +80,7 @@ type MutationResolver interface {
 	SetValid(ctx context.Context, hash string) (string, error)
 }
 type QueryResolver interface {
-	Decks(ctx context.Context) ([]*models.Deck, error)
+	Decks(ctx context.Context, search *string, semester *string, year *int) ([]*models.Deck, error)
 }
 
 type executableSchema struct {
@@ -225,7 +225,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Decks(childComplexity), true
+		args, err := ec.field_Query_decks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Decks(childComplexity, args["search"].(*string), args["semester"].(*string), args["year"].(*int)), true
 
 	}
 	return 0, false
@@ -442,6 +447,39 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_decks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["semester"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("semester"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["semester"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["year"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["year"] = arg2
 	return args, nil
 }
 
@@ -1217,7 +1255,7 @@ func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Decks(rctx)
+		return ec.resolvers.Query().Decks(rctx, fc.Args["search"].(*string), fc.Args["semester"].(*string), fc.Args["year"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1265,6 +1303,17 @@ func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_decks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4216,6 +4265,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
 	return res
 }
 

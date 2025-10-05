@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Stapel",
-  description: "Anki Karten für deine Veranstaltungen an der Uni Heidelberg. Bereitgestellt von der Fachschaft MathPhysInfo·",
+  description:
+    "Anki Karten für deine Veranstaltungen an der Uni Heidelberg. Bereitgestellt von der Fachschaft MathPhysInfo·",
 };
 
 export default function RootLayout({
@@ -25,9 +27,10 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased m-4`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Header />
+        <div className="mx-4 pt-20">{children}</div>
       </body>
     </html>
   );

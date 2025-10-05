@@ -1,5 +1,5 @@
-query decks {
-  decks {
+query decks($search: String, $year: Int, $semester: String) {
+  decks(search: $search, year: $year, semester: $semester) {
     subject
     module
     moduleAlt

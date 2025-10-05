@@ -16,20 +16,33 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Deck, DecksDocument, DecksQuery } from "@/lib/gql/generated/graphql";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Deck,
+  DecksDocument,
+  DecksQuery,
+  DecksQueryVariables,
+} from "@/lib/gql/generated/graphql";
 import { getClient } from "@/lib/graphql";
-import { Calendar, Download, Languages, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar, Download, Languages, Library, User } from "lucide-react";
 import React from "react";
 import ReactCountryFlag from "react-country-flag";
 
 export default function Home() {
   const [decks, setDecks] = React.useState<Deck[]>([]);
+  const [searchString, setSearchString] = React.useState<string | undefined>();
+
+  const isMobile = useIsMobile();
 
   React.useEffect(() => {
     const fetchDecks = async () => {
       const client = getClient();
       try {
-        const deckData = await client.request<DecksQuery>(DecksDocument);
+        const vars: DecksQueryVariables = {
+          search: searchString,
+        };
+        const deckData = await client.request<DecksQuery>(DecksDocument, vars);
         setDecks(deckData.decks);
       } catch (err) {
         console.log(err);
@@ -37,20 +50,24 @@ export default function Home() {
     };
 
     void fetchDecks();
-  }, []);
+  }, [searchString]);
 
   return (
     <div className="space-y-4">
-      <Input placeholder="Nach Modul, Dozent/in oder Abkürzung suchen..." />
+      <Input
+        placeholder="Nach Modul, Dozent/in oder Abkürzung suchen..."
+        onChange={(e) => setSearchString(e.target.value)}
+        className="max-w-[400px]"
+      />
       <div className="flex flex-wrap gap-4">
         {decks.map((d) => (
-          <Card className="w-70" key={d.hash}>
+          <Card className={cn(isMobile ? "w-full" : "w-70")} key={d.hash}>
             <CardHeader>
               <CardTitle>{d.module}</CardTitle>
               <CardDescription>{d.subject}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              <InfoBadge tooltip="Sprache">
+              <InfoBadge tooltip="Sprache" variant="outline">
                 <Languages className="size-4" />
                 <ReactCountryFlag countryCode="de" />
               </InfoBadge>
@@ -61,6 +78,10 @@ export default function Home() {
               <InfoBadge tooltip="Semester" variant="outline">
                 <Calendar className="size-4" />
                 {`${d.semester} ${d.year}`}
+              </InfoBadge>
+              <InfoBadge tooltip="Modul ALT">
+                <Library className="size-4" />
+                {d.moduleAlt}
               </InfoBadge>
             </CardContent>
             <CardFooter>

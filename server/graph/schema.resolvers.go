@@ -143,10 +143,30 @@ func (r *mutationResolver) SetValid(ctx context.Context, hash string) (string, e
 }
 
 // Decks is the resolver for the decks field.
-func (r *queryResolver) Decks(ctx context.Context) ([]*models.Deck, error) {
+func (r *queryResolver) Decks(ctx context.Context, search *string, semester *string, year *int) ([]*models.Deck, error) {
 	var decks []*models.Deck
-	if err := r.DB.NewSelect().
-		Model(&decks).
+	query := r.DB.NewSelect().
+		Model(&decks)
+
+	if search != nil && *search != "" {
+		query = query.
+			Where("examiners LIKE ?", "%"+*search+"%").
+			WhereOr("module LIKE ?", "%"+*search+"%").
+			WhereOr("subject LIKE ?", "%"+*search+"%").
+			WhereOr("module_alt LIKE ?", "%"+*search+"%")
+	}
+
+	if semester != nil {
+		query = query.
+			Where("semester = ?", semester)
+	}
+
+	if year != nil {
+		query = query.
+			Where("year = ?", year)
+	}
+
+	if err := query.
 		Scan(ctx); err != nil {
 		return nil, err
 	}

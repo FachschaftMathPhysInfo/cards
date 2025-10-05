@@ -16,7 +16,7 @@ type Deck {
 }
 
 type Query {
-  decks: [Deck!]!
+  decks(search: String, semester: String, year: Int): [Deck!]!
 }
 
 input NewDeck {
