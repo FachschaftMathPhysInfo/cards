@@ -57,6 +57,7 @@ import {
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useRefetch } from "@/components/providers/refetch-provider";
 
 interface DeckDialogProps {
   trigger: React.ReactNode;
@@ -98,7 +99,9 @@ const FormSchema = z.object({
 
 export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
   const { token } = useAuth();
+  const { triggerRefetch } = useRefetch();
 
+  const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | undefined>();
   const [loading, setLoading] = useState(false);
 
@@ -128,6 +131,8 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
       toast.error("Beim einreichen deines Stapels ist ein Fehler aufgetreten.");
     }
 
+    triggerRefetch();
+    setOpen(false);
     setLoading(false);
   }
 
@@ -146,11 +151,13 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
       toast.error("Beim speichern des Stapels ist ein Fehler aufgetreten.");
     }
 
+    triggerRefetch();
+    setOpen(false);
     setLoading(false);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -168,7 +175,7 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(
-              deck ? onUpdateDeckSubmit : onNewDeckSubmit
+              isEditing ? onUpdateDeckSubmit : onNewDeckSubmit
             )}
             className="space-y-4"
           >
@@ -344,9 +351,11 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
               </Dropzone>
             )}
             <DialogFooter>
-              <Button className="mr-auto" variant="destructive" type="button">
-                <Trash />
-              </Button>
+              {isEditing && (
+                <Button className="mr-auto" variant="destructive" type="button">
+                  <Trash />
+                </Button>
+              )}
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   Abbrechen

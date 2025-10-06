@@ -7,10 +7,10 @@ const getEndpoint = () => {
   return "";
 };
 
-export const getClient = (jwt?: string) => {
+export const getClient = (token?: string) => {
   return new GraphQLClient(getEndpoint(), {
     headers: {
-      JWT: jwt ?? "",
+      TOKEN: token ?? "",
     },
   });
 };

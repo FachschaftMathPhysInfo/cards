@@ -3,6 +3,7 @@
 import DeckDialog from "@/components/dialogs/deck/deck-dialog";
 import { FacetedFilter } from "@/components/faceted-filter";
 import { useAuth } from "@/components/providers/auth-provider";
+import {useRefetch} from "@/components/providers/refetch-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +43,7 @@ import ReactCountryFlag from "react-country-flag";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const { refetchKey } = useRefetch()
 
   const [decks, setDecks] = React.useState<Deck[]>([]);
   const [searchString, setSearchString] = React.useState<string | undefined>();
@@ -65,7 +67,7 @@ export default function Home() {
     };
 
     void fetchDecks();
-  }, [searchString, languageFilter]);
+  }, [searchString, languageFilter, refetchKey]);
 
   return (
     <div className="space-y-4">
@@ -102,10 +104,6 @@ export default function Home() {
                     <Languages className="size-4" />
                     <ReactCountryFlag countryCode={d.language} />
                   </InfoBadge>
-                  <InfoBadge tooltip="Dozent/in">
-                    <User className="size-4" />
-                    {d.examiners}
-                  </InfoBadge>
                   <InfoBadge tooltip="Semester">
                     <Calendar className="size-4" />
                     {`${d.semester} ${d.year}`}
@@ -113,6 +111,10 @@ export default function Home() {
                   <InfoBadge tooltip="Modul ALT">
                     <Library className="size-4" />
                     {d.moduleAlt}
+                  </InfoBadge>
+                  <InfoBadge tooltip="Dozent/in">
+                    <User className="size-4" />
+                    {d.examiners}
                   </InfoBadge>
                 </CardContent>
                 <CardFooter>

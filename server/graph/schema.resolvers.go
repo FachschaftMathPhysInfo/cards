@@ -96,6 +96,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, meta models.Deck, fil
 
 // UpdateDeck is the resolver for the updateDeck field.
 func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, meta models.Deck) (string, error) {
+	meta.Hash = hash
 	if _, err := r.DB.NewUpdate().
 		Model(&meta).
 		OmitZero().
