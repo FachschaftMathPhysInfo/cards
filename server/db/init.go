@@ -17,6 +17,7 @@ var (
 	err   error
 
 	tables = []interface{}{
+		(*models.Session)(nil),
 		(*models.Deck)(nil)}
 )
 

@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Library,
   TextAlignStart,
+  Trash,
   User,
 } from "lucide-react";
 import React, { useState } from "react";
@@ -48,12 +49,18 @@ import { getClient } from "@/lib/graphql";
 import {
   CreateDeckDocument,
   CreateDeckMutation,
+  Deck,
+  UpdateDeckDocument,
+  UpdateDeckMutation,
+  UpdateDeckMutationVariables,
 } from "@/lib/gql/generated/graphql";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface DeckDialogProps {
   trigger: React.ReactNode;
+  deck?: Deck;
 }
 
 const FormSchema = z.object({
@@ -71,7 +78,7 @@ const FormSchema = z.object({
     .string()
     .min(1, { message: "Bitte beschreibe kurz worum es geht" })
     .max(45, { message: "Es sind maximal 45 Zeichen erlaubt" }),
-  examiner: z
+  examiners: z
     .string()
     .min(1, { message: "Bitte gib an, wer die Veranstaltung gehalten hat" })
     .max(35, { message: "Es sind maximal 35 Zeichen erlaubt" }),
@@ -89,24 +96,28 @@ const FormSchema = z.object({
     .min(1, { message: "Bitte wähle die Sprache deines Stapels" }),
 });
 
-export default function DeckDialog({ trigger }: DeckDialogProps) {
+export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
+  const { token } = useAuth();
+
   const [file, setFile] = useState<File | undefined>();
   const [loading, setLoading] = useState(false);
 
+  const isEditing = !!deck;
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
+    defaultValues: deck ?? {
       module: "",
       moduleAlt: "",
       subject: "",
-      examiner: "",
+      examiners: "",
       semester: "WiSe",
       year: new Date().getFullYear(),
       language: "de",
     },
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onNewDeckSubmit(data: z.infer<typeof FormSchema>) {
     setLoading(true);
 
     try {
@@ -116,6 +127,26 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
     } catch {
       toast.error("Beim einreichen deines Stapels ist ein Fehler aufgetreten.");
     }
+
+    setLoading(false);
+  }
+
+  async function onUpdateDeckSubmit(data: z.infer<typeof FormSchema>) {
+    setLoading(true);
+
+    try {
+      const client = getClient(token);
+      const vars: UpdateDeckMutationVariables = {
+        meta: data,
+        hash: deck!.hash,
+      };
+      await client.request<UpdateDeckMutation>(UpdateDeckDocument, vars);
+      toast.success("Der Stapel wurde erfolgreich aktualisiert!");
+    } catch {
+      toast.error("Beim speichern des Stapels ist ein Fehler aufgetreten.");
+    }
+
+    setLoading(false);
   }
 
   return (
@@ -123,14 +154,24 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Anki Stapel einreichen</DialogTitle>
+          <DialogTitle>
+            Anki Stapel {isEditing ? "bearbeiten" : "einreichen"}
+          </DialogTitle>
+          {!isEditing && (
+            <DialogDescription>
+              Danke, dass du bereit bist deine Anki-Karten zur Verfügung zu
+              stellen! Wir werden den Stapel prüfen und ihn anschließend
+              freigeben.
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <DialogDescription>
-          Danke, dass du bereit bist deine Anki-Karten zur Verfügung zu stellen!
-          Wir werden den Stapel prüfen und ihn anschließend freigeben.
-        </DialogDescription>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(
+              deck ? onUpdateDeckSubmit : onNewDeckSubmit
+            )}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="module"
@@ -193,7 +234,7 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
             />
             <FormField
               control={form.control}
-              name="examiner"
+              name="examiners"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dozent/in</FormLabel>
@@ -245,7 +286,8 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
                       <FormControl>
                         <Input
                           placeholder={new Date().getFullYear().toString()}
-                          className="w-[60px]"
+                          className="w-[85px]"
+                          type="number"
                           maxLength={4}
                           {...field}
                         />
@@ -290,16 +332,21 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
                 )}
               />
             </div>
-            <Dropzone
-              maxFiles={1}
-              accept={{ ".colpkg": [], ".apkg": [] }}
-              onDrop={(f) => setFile(f[0])}
-              src={file && [file]}
-            >
-              <DropzoneEmptyState />
-              <DropzoneContent />
-            </Dropzone>
+            {!isEditing && (
+              <Dropzone
+                maxFiles={1}
+                accept={{ ".colpkg": [], ".apkg": [] }}
+                onDrop={(f) => setFile(f[0])}
+                src={file && [file]}
+              >
+                <DropzoneEmptyState />
+                <DropzoneContent />
+              </Dropzone>
+            )}
             <DialogFooter>
+              <Button className="mr-auto" variant="destructive" type="button">
+                <Trash />
+              </Button>
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   Abbrechen
@@ -307,7 +354,7 @@ export default function DeckDialog({ trigger }: DeckDialogProps) {
               </DialogClose>
               <Button disabled={loading} type="submit">
                 {loading && <Spinner />}
-                Einreichen
+                {isEditing ? "Speichern" : "Einreichen"}
               </Button>
             </DialogFooter>
           </form>

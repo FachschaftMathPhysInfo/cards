@@ -1,0 +1,3 @@
+query IsActiveSession($token: String!) {
+  isActiveSession(token: $token)
+}

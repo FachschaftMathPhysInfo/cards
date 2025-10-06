@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -21,10 +23,15 @@ import (
 
 const (
 	defaultPort = "8080"
-	jwtHeader   = "JWT"
+	tokenHeader = "TOKEN"
 )
 
 func main() {
+	publicUrl := os.Getenv("PUBLIC_URL")
+	if publicUrl == "" {
+		publicUrl = "http://localhost:8080"
+	}
+
 	ctx := context.Background()
 	db, sqldb, err := db.Init(ctx)
 	defer sqldb.Close()
@@ -36,11 +43,12 @@ func main() {
 	gqlResolver := graph.Resolver{DB: db}
 	gc := graph.Config{Resolvers: &gqlResolver}
 	gc.Directives.Auth = func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
-		jwt, _ := ctx.Value("jwt").(string)
-		if err := utils.VerifyToken(jwt); err != nil {
-			return nil, err
+		token, _ := ctx.Value("token").(string)
+		isValid, _ := gqlResolver.Query().IsActiveSession(ctx, token)
+		if isValid {
+			return next(ctx)
 		}
-		return next(ctx)
+		return
 	}
 
 	router := chi.NewRouter()
@@ -56,21 +64,22 @@ func main() {
 	router.Use(middleware.Logger)
 
 	// Route for user login
-	router.Get("/login/", func(w http.ResponseWriter, r *http.Request) {
-		username := r.Header.Get("X-Username")
-		if username == "" {
-			username = "testuser"
+	router.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+		token, err := utils.Login(ctx, db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		utils.ReturnJWTToken(username, w, r)
+
+		http.Redirect(w, r, fmt.Sprintf("%s?token=%s", publicUrl, token), http.StatusFound)
 	})
 
 	// Serve GraphQL endpoint
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(gc))
 	router.With(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			jwt := r.Header.Get(jwtHeader)
-			if jwt != "" {
-				ctx = context.WithValue(ctx, "jwt", jwt)
+			token := r.Header.Get(tokenHeader)
+			if token != "" {
+				ctx = context.WithValue(ctx, "token", token)
 			}
 			h.ServeHTTP(w, r.WithContext(ctx))
 		})

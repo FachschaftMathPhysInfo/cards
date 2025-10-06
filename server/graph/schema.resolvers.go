@@ -15,11 +15,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/FachschaftMathPhysInfo/cards/server/models"
 	"github.com/FachschaftMathPhysInfo/cards/server/utils"
 	anki "github.com/dheidemann/anki-go"
+	"github.com/uptrace/bun"
 )
 
 // CreateDeck is the resolver for the createDeck field.
@@ -142,8 +144,21 @@ func (r *mutationResolver) SetValid(ctx context.Context, hash string) (string, e
 	return hash, nil
 }
 
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context, token string) (string, error) {
+	if _, err := r.DB.NewDelete().
+		Model((*models.Session)(nil)).
+		Where("token = ?", token).
+		Exec(ctx); err != nil {
+		fmt.Print(err)
+		return "", fmt.Errorf("Internal Server Error")
+	}
+
+	return token, nil
+}
+
 // Decks is the resolver for the decks field.
-func (r *queryResolver) Decks(ctx context.Context, search *string, semester *string, year *int) ([]*models.Deck, error) {
+func (r *queryResolver) Decks(ctx context.Context, search *string, language []string, semester *string, year *int) ([]*models.Deck, error) {
 	var decks []*models.Deck
 	query := r.DB.NewSelect().
 		Model(&decks)
@@ -166,12 +181,40 @@ func (r *queryResolver) Decks(ctx context.Context, search *string, semester *str
 			Where("year = ?", year)
 	}
 
+	if language != nil {
+		query = query.
+			Where("language IN (?)", bun.In(language))
+	}
+
 	if err := query.
 		Scan(ctx); err != nil {
 		return nil, err
 	}
 
 	return decks, nil
+}
+
+// IsActiveSession is the resolver for the isActiveSession field.
+func (r *queryResolver) IsActiveSession(ctx context.Context, token string) (bool, error) {
+	session := new(models.Session)
+	if err := r.DB.NewSelect().
+		Model(session).
+		Where("token = ?", token).
+		Scan(ctx); err != nil {
+		fmt.Print(err)
+		return false, fmt.Errorf("Internal Server Error")
+	}
+
+	if session == nil {
+		return false, fmt.Errorf("No active session found")
+	}
+
+	if session.ExpiresAt.Before(time.Now()) {
+		r.Mutation().Logout(ctx, token)
+		return false, fmt.Errorf("Session is expired")
+	}
+
+	return true, nil
 }
 
 // Mutation returns MutationResolver implementation.

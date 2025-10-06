@@ -9,7 +9,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
@@ -20,12 +19,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import ReactCountryFlag from "react-country-flag";
 
 interface FacetedFilterProps {
   title?: string;
   options: string[];
-  filters: number[];
-  setFilter: React.Dispatch<React.SetStateAction<number[]>>;
+  filters: string[];
+  setFilter: React.Dispatch<React.SetStateAction<string[]>>;
   className?: string;
   hideIcon?: boolean;
 }
@@ -59,18 +59,18 @@ export function FacetedFilter({
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {filters.length} selected
+                    {filters.length} ausgewählt
                   </Badge>
                 ) : (
                   options
-                    .filter((option) => filters.includes(option.ID))
+                    .filter((option) => filters.includes(option))
                     .map((option) => (
                       <Badge
                         variant="secondary"
-                        key={option.ID}
+                        key={option}
                         className="rounded-sm px-1 font-normal"
                       >
-                        {option.name}
+                        <ReactCountryFlag countryCode={option} />
                       </Badge>
                     ))
                 )}
@@ -81,22 +81,21 @@ export function FacetedFilter({
       </PopoverTrigger>
       <PopoverContent className={cn("w-[200px] p-0", className)} align="start">
         <Command className={"h-full"}>
-          <CommandInput placeholder={title} />
           <CommandList>
             <CommandEmpty>Keine Ergebnisse gefunden.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = filters.includes(option.ID);
+                const isSelected = filters.includes(option);
                 return (
                   <CommandItem
-                    key={option.ID}
+                    key={option}
                     onSelect={() => {
                       const newFilters = [...filters];
                       if (isSelected) {
-                        const index = newFilters.indexOf(option.ID);
+                        const index = newFilters.indexOf(option);
                         if (index > -1) newFilters.splice(index, 1);
                       } else {
-                        newFilters.push(option.ID);
+                        newFilters.push(option);
                       }
                       setFilter(newFilters);
                     }}
@@ -111,7 +110,7 @@ export function FacetedFilter({
                     >
                       <Check />
                     </div>
-                    <span>{option.name}</span>
+                    <ReactCountryFlag countryCode={option} />
                   </CommandItem>
                 );
               })}

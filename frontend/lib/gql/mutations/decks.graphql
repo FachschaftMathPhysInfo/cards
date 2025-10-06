@@ -1,3 +1,7 @@
 mutation CreateDeck($meta: NewDeck!, $file: Upload!) {
   createDeck(meta: $meta, file: $file)
 }
+
+mutation UpdateDeck($hash: String!, $meta: NewDeck!) {
+  updateDeck(hash: $hash, meta: $meta)
+}

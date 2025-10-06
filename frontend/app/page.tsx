@@ -1,5 +1,8 @@
 "use client";
 
+import DeckDialog from "@/components/dialogs/deck/deck-dialog";
+import { FacetedFilter } from "@/components/faceted-filter";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,13 +28,24 @@ import {
 } from "@/lib/gql/generated/graphql";
 import { getClient } from "@/lib/graphql";
 import { cn, downloadDeck } from "@/lib/utils";
-import { Calendar, Download, Languages, Library, User } from "lucide-react";
-import React from "react";
+import {
+  Calendar,
+  Check,
+  Download,
+  Edit3,
+  Languages,
+  Library,
+  User,
+} from "lucide-react";
+import React, { useState } from "react";
 import ReactCountryFlag from "react-country-flag";
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+
   const [decks, setDecks] = React.useState<Deck[]>([]);
   const [searchString, setSearchString] = React.useState<string | undefined>();
+  const [languageFilter, setLanguageFilter] = useState<string[]>([]);
 
   const isMobile = useIsMobile();
 
@@ -41,6 +55,7 @@ export default function Home() {
       try {
         const vars: DecksQueryVariables = {
           search: searchString,
+          language: languageFilter.length ? languageFilter : undefined,
         };
         const deckData = await client.request<DecksQuery>(DecksDocument, vars);
         setDecks(deckData.decks);
@@ -50,47 +65,91 @@ export default function Home() {
     };
 
     void fetchDecks();
-  }, [searchString]);
+  }, [searchString, languageFilter]);
 
   return (
     <div className="space-y-4">
-      <Input
-        placeholder="Nach Modul, Dozent/in oder Abkürzung suchen..."
-        onChange={(e) => setSearchString(e.target.value)}
-        className="max-w-[400px]"
-      />
-      <div className="flex flex-wrap gap-4">
-        {decks.map((d) => (
-          <Card className={cn(isMobile ? "w-full" : "w-70")} key={d.hash}>
-            <CardHeader>
-              <CardTitle>{d.module}</CardTitle>
-              <CardDescription>{d.subject}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <InfoBadge tooltip="Sprache" variant="outline">
-                <Languages className="size-4" />
-                <ReactCountryFlag countryCode={d.language} />
-              </InfoBadge>
-              <InfoBadge tooltip="Dozent/in">
-                <User className="size-4" />
-                {d.examiners}
-              </InfoBadge>
-              <InfoBadge tooltip="Semester" variant="outline">
-                <Calendar className="size-4" />
-                {`${d.semester} ${d.year}`}
-              </InfoBadge>
-              <InfoBadge tooltip="Modul ALT">
-                <Library className="size-4" />
-                {d.moduleAlt}
-              </InfoBadge>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => downloadDeck(d.hash)}>
-                <Download className="size-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="flex flex-row items-center gap-x-2">
+        <Input
+          placeholder="Nach Modul, Dozent/in oder Abkürzung suchen..."
+          onChange={(e) => setSearchString(e.target.value)}
+          className="max-w-[400px]"
+        />
+        <FacetedFilter
+          title="Sprache"
+          options={["de", "gb", "fr", "es"]}
+          setFilter={setLanguageFilter}
+          filters={languageFilter}
+        />
+      </div>
+      <div className="flex flex-wrap gap-4 items-start content-start">
+        {decks.map(
+          (d) =>
+            (d.isValid || isAuthenticated) && (
+              <Card
+                className={cn(
+                  isMobile ? "w-full" : "w-70",
+                  "self-start flex-none"
+                )}
+                key={d.hash}
+              >
+                <CardHeader>
+                  <CardTitle>{d.module}</CardTitle>
+                  <CardDescription>{d.subject}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  <InfoBadge tooltip="Sprache">
+                    <Languages className="size-4" />
+                    <ReactCountryFlag countryCode={d.language} />
+                  </InfoBadge>
+                  <InfoBadge tooltip="Dozent/in">
+                    <User className="size-4" />
+                    {d.examiners}
+                  </InfoBadge>
+                  <InfoBadge tooltip="Semester">
+                    <Calendar className="size-4" />
+                    {`${d.semester} ${d.year}`}
+                  </InfoBadge>
+                  <InfoBadge tooltip="Modul ALT">
+                    <Library className="size-4" />
+                    {d.moduleAlt}
+                  </InfoBadge>
+                </CardContent>
+                <CardFooter>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => downloadDeck(d.hash)}>
+                        <Download />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Stapel herunterladen</TooltipContent>
+                  </Tooltip>
+                  {isAuthenticated && (
+                    <>
+                      <DeckDialog
+                        trigger={
+                          <Button variant="secondary" className="ml-2">
+                            <Edit3 />
+                          </Button>
+                        }
+                        deck={d}
+                      />
+                      {!d.isValid && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button className="ml-auto bg-green-500 hover:bg-green-400">
+                              <Check />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Stapel akzeptieren</TooltipContent>
+                        </Tooltip>
+                      )}
+                    </>
+                  )}
+                </CardFooter>
+              </Card>
+            )
+        )}
       </div>
     </div>
   );
@@ -102,7 +161,12 @@ interface InfoBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "secondary" | "outline";
 }
 
-function InfoBadge({ tooltip, variant, children, className }: InfoBadgeProps) {
+function InfoBadge({
+  tooltip,
+  variant = "secondary",
+  children,
+  className,
+}: InfoBadgeProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild className={className}>
