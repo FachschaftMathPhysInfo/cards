@@ -24,7 +24,7 @@ import {
   DecksQueryVariables,
 } from "@/lib/gql/generated/graphql";
 import { getClient } from "@/lib/graphql";
-import { cn } from "@/lib/utils";
+import { cn, downloadDeck } from "@/lib/utils";
 import { Calendar, Download, Languages, Library, User } from "lucide-react";
 import React from "react";
 import ReactCountryFlag from "react-country-flag";
@@ -69,7 +69,7 @@ export default function Home() {
             <CardContent className="flex flex-wrap gap-2">
               <InfoBadge tooltip="Sprache" variant="outline">
                 <Languages className="size-4" />
-                <ReactCountryFlag countryCode="de" />
+                <ReactCountryFlag countryCode={d.language} />
               </InfoBadge>
               <InfoBadge tooltip="Dozent/in">
                 <User className="size-4" />
@@ -85,7 +85,7 @@ export default function Home() {
               </InfoBadge>
             </CardContent>
             <CardFooter>
-              <Button>
+              <Button onClick={() => downloadDeck(d.hash)}>
                 <Download className="size-4" />
               </Button>
             </CardFooter>

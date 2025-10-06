@@ -1,0 +1,3 @@
+mutation CreateDeck($meta: NewDeck!, $file: Upload!) {
+  createDeck(meta: $meta, file: $file)
+}
