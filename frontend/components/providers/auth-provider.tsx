@@ -2,14 +2,9 @@
 
 import { deleteCookie, getCookie, setCookie } from "@/lib/cookie";
 import {
-  IsActiveSessionDocument,
-  IsActiveSessionQuery,
-  IsActiveSessionQueryVariables,
-  LogoutDocument,
-  LogoutMutation,
-  LogoutMutationVariables,
+  useIsActiveSessionQuery,
+  useLogoutMutation,
 } from "@/lib/gql/generated/graphql";
-import { getClient } from "@/lib/graphql";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -22,7 +17,6 @@ import { toast } from "sonner";
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  token: string | undefined;
   logout: () => void;
 };
 
@@ -34,6 +28,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | undefined>();
+
+  const { error: sessionError, data: sessionData } = useIsActiveSessionQuery({
+    skip: !token,
+    variables: { token: token! },
+  });
+
+  if (sessionError) {
+    toast.error(
+      `Bei der Überprüfung der Session ist ein Fehler aufgetreten: ${sessionError.message}`
+    );
+  }
+
+  useEffect(() => {
+    if (sessionData) {
+      setIsAuthenticated(sessionData.isActiveSession);
+      if (sessionData.isActiveSession) setCookie("token", token!, 7);
+    }
+  }, [sessionData]);
 
   useEffect(() => {
     const tokenCookie = getCookie("token");
@@ -48,43 +60,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
+  const [triggerLogout, { error: logoutError }] = useLogoutMutation();
+
+  if (logoutError) {
+    toast.error(`Beim abmelden ist ein Fehler aufgetreten: ${logoutError}`);
+  }
+
+  function logout() {
     if (!token) return;
-
-    const validateSession = async () => {
-      try {
-        const client = getClient();
-        const vars: IsActiveSessionQueryVariables = { token: token };
-        const res = await client.request<IsActiveSessionQuery>(
-          IsActiveSessionDocument,
-          vars
-        );
-        setIsAuthenticated(res.isActiveSession);
-        setCookie("token", token, 7);
-      } catch {
-        toast.error("Beim überprüfen der Session ist ein Fehler aufgetreten");
-      }
-    };
-
-    void validateSession();
-  }, [token]);
-
-  async function logout() {
-    if (!token) return;
-    try {
-      const client = getClient();
-      const vars: LogoutMutationVariables = { token: token };
-      await client.request<LogoutMutation>(LogoutDocument, vars);
-      deleteCookie("token");
-      setIsAuthenticated(false);
-      setToken(undefined);
-    } catch {
-      toast.error("Beim ausloggen ist ein Fehler aufgetreten");
-    }
+    triggerLogout({ variables: { token: token } });
+    deleteCookie("token");
+    setToken(undefined);
+    setIsAuthenticated(false);
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout }}>
       {children}
     </AuthContext.Provider>
   );

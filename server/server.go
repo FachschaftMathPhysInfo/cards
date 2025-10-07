@@ -75,15 +75,14 @@ func main() {
 
 	// Serve GraphQL endpoint
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(gc))
-	router.With(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get(tokenHeader)
-			if token != "" {
-				ctx = context.WithValue(ctx, "token", token)
-			}
-			h.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}).Handle("/graphql", srv)
+	router.Handle("/graphql", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqCtx := r.Context()
+		token := r.Header.Get(tokenHeader)
+		if token != "" {
+			reqCtx = context.WithValue(reqCtx, "token", token)
+		}
+		srv.ServeHTTP(w, r.WithContext(reqCtx))
+	}))
 
 	// Serve deck files
 	fileServer := http.FileServer(http.Dir("./deckfiles"))

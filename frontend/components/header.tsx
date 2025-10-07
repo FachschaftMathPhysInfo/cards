@@ -8,10 +8,10 @@ import { GithubIcon } from "./social-icons";
 import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useAuth } from "./providers/auth-provider";
-import {Separator} from "@radix-ui/react-separator";
+import { Separator } from "@radix-ui/react-separator";
 
 export default function Header() {
-  const { logout, isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   return (
     <div className="justify-between z-20 fixed w-screen h-fit flex items-center p-5 dark:bg-black/30 light:bg-white/30 backdrop-blur-md border-b-[1px]">
       <Link href="/" className="flex flex-row items-center gap-x-2">
@@ -51,9 +51,7 @@ export default function Header() {
           </Tooltip>
         )}
         <Separator orientation="vertical" className="h-8 border-1" />
-        <Link
-          href="https://github.com/FachschaftMathPhysInfo/cards"
-        >
+        <Link href="https://github.com/FachschaftMathPhysInfo/cards">
           <GithubIcon />
         </Link>
       </div>

@@ -1,12 +1,13 @@
-/* eslint-disable */
-import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+import { gql } from '@apollo/client';
+import * as Apollo from '@apollo/client/react';
 export type Maybe<T> = T | null;
-export type InputMaybe<T> = T | null | undefined;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string; }
@@ -14,11 +15,11 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  Upload: { input: any; output: any; }
+  Upload: { input: unknown; output: unknown; }
 };
 
 export type Deck = {
-  __typename?: 'Deck';
+  __typename: 'Deck';
   examiners: Scalars['String']['output'];
   fileType: Scalars['String']['output'];
   hash: Scalars['String']['output'];
@@ -32,7 +33,7 @@ export type Deck = {
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
+  __typename: 'Mutation';
   createDeck: Scalars['String']['output'];
   deleteDeck: Scalars['String']['output'];
   logout: Scalars['String']['output'];
@@ -78,14 +79,14 @@ export type NewDeck = {
 };
 
 export type Query = {
-  __typename?: 'Query';
-  decks: Array<Deck>;
+  __typename: 'Query';
+  decks: Maybe<Array<Deck>>;
   isActiveSession: Scalars['Boolean']['output'];
 };
 
 
 export type QueryDecksArgs = {
-  language?: InputMaybe<Array<Scalars['String']['input']>>;
+  languages?: InputMaybe<Array<Scalars['String']['input']>>;
   search?: InputMaybe<Scalars['String']['input']>;
   semester?: InputMaybe<Scalars['String']['input']>;
   year?: InputMaybe<Scalars['Int']['input']>;
@@ -102,7 +103,7 @@ export type CreateDeckMutationVariables = Exact<{
 }>;
 
 
-export type CreateDeckMutation = { __typename?: 'Mutation', createDeck: string };
+export type CreateDeckMutation = { createDeck: string };
 
 export type UpdateDeckMutationVariables = Exact<{
   hash: Scalars['String']['input'];
@@ -110,35 +111,215 @@ export type UpdateDeckMutationVariables = Exact<{
 }>;
 
 
-export type UpdateDeckMutation = { __typename?: 'Mutation', updateDeck: string };
+export type UpdateDeckMutation = { updateDeck: string };
 
 export type LogoutMutationVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
 
 
-export type LogoutMutation = { __typename?: 'Mutation', logout: string };
+export type LogoutMutation = { logout: string };
 
 export type DecksQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
   year?: InputMaybe<Scalars['Int']['input']>;
   semester?: InputMaybe<Scalars['String']['input']>;
-  language?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  languages?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
 }>;
 
 
-export type DecksQuery = { __typename?: 'Query', decks: Array<{ __typename?: 'Deck', subject: string, module: string, moduleAlt: string, examiners: string, language: string, semester: string, year: number, hash: string, fileType: string, isValid: boolean }> };
+export type DecksQuery = { decks: Array<{ __typename: 'Deck', subject: string, module: string, moduleAlt: string, examiners: string, language: string, semester: string, year: number, hash: string, fileType: string, isValid: boolean }> | null };
 
 export type IsActiveSessionQueryVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
 
 
-export type IsActiveSessionQuery = { __typename?: 'Query', isActiveSession: boolean };
+export type IsActiveSessionQuery = { isActiveSession: boolean };
 
 
-export const CreateDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"meta"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"NewDeck"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"file"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Upload"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createDeck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"meta"},"value":{"kind":"Variable","name":{"kind":"Name","value":"meta"}}},{"kind":"Argument","name":{"kind":"Name","value":"file"},"value":{"kind":"Variable","name":{"kind":"Name","value":"file"}}}]}]}}]} as unknown as DocumentNode<CreateDeckMutation, CreateDeckMutationVariables>;
-export const UpdateDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"hash"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"meta"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"NewDeck"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateDeck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"hash"},"value":{"kind":"Variable","name":{"kind":"Name","value":"hash"}}},{"kind":"Argument","name":{"kind":"Name","value":"meta"},"value":{"kind":"Variable","name":{"kind":"Name","value":"meta"}}}]}]}}]} as unknown as DocumentNode<UpdateDeckMutation, UpdateDeckMutationVariables>;
-export const LogoutDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"Logout"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"logout"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}}]}]}}]} as unknown as DocumentNode<LogoutMutation, LogoutMutationVariables>;
-export const DecksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"decks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"year"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"semester"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"language"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"decks"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}},{"kind":"Argument","name":{"kind":"Name","value":"year"},"value":{"kind":"Variable","name":{"kind":"Name","value":"year"}}},{"kind":"Argument","name":{"kind":"Name","value":"semester"},"value":{"kind":"Variable","name":{"kind":"Name","value":"semester"}}},{"kind":"Argument","name":{"kind":"Name","value":"language"},"value":{"kind":"Variable","name":{"kind":"Name","value":"language"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"module"}},{"kind":"Field","name":{"kind":"Name","value":"moduleAlt"}},{"kind":"Field","name":{"kind":"Name","value":"examiners"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"semester"}},{"kind":"Field","name":{"kind":"Name","value":"year"}},{"kind":"Field","name":{"kind":"Name","value":"hash"}},{"kind":"Field","name":{"kind":"Name","value":"fileType"}},{"kind":"Field","name":{"kind":"Name","value":"isValid"}}]}}]}}]} as unknown as DocumentNode<DecksQuery, DecksQueryVariables>;
-export const IsActiveSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"IsActiveSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isActiveSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}}]}]}}]} as unknown as DocumentNode<IsActiveSessionQuery, IsActiveSessionQueryVariables>;
+export const CreateDeckDocument = gql`
+    mutation CreateDeck($meta: NewDeck!, $file: Upload!) {
+  createDeck(meta: $meta, file: $file)
+}
+    `;
+export type CreateDeckMutationFn = Apollo.MutationFunction<CreateDeckMutation, CreateDeckMutationVariables>;
+
+/**
+ * __useCreateDeckMutation__
+ *
+ * To run a mutation, you first call `useCreateDeckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateDeckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createDeckMutation, { data, loading, error }] = useCreateDeckMutation({
+ *   variables: {
+ *      meta: // value for 'meta'
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useCreateDeckMutation(baseOptions?: Apollo.MutationHookOptions<CreateDeckMutation, CreateDeckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateDeckMutation, CreateDeckMutationVariables>(CreateDeckDocument, options);
+      }
+export type CreateDeckMutationHookResult = ReturnType<typeof useCreateDeckMutation>;
+export type CreateDeckMutationResult = Apollo.MutationResult<CreateDeckMutation>;
+export type CreateDeckMutationOptions = Apollo.BaseMutationOptions<CreateDeckMutation, CreateDeckMutationVariables>;
+export const UpdateDeckDocument = gql`
+    mutation UpdateDeck($hash: String!, $meta: NewDeck!) {
+  updateDeck(hash: $hash, meta: $meta)
+}
+    `;
+export type UpdateDeckMutationFn = Apollo.MutationFunction<UpdateDeckMutation, UpdateDeckMutationVariables>;
+
+/**
+ * __useUpdateDeckMutation__
+ *
+ * To run a mutation, you first call `useUpdateDeckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateDeckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateDeckMutation, { data, loading, error }] = useUpdateDeckMutation({
+ *   variables: {
+ *      hash: // value for 'hash'
+ *      meta: // value for 'meta'
+ *   },
+ * });
+ */
+export function useUpdateDeckMutation(baseOptions?: Apollo.MutationHookOptions<UpdateDeckMutation, UpdateDeckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateDeckMutation, UpdateDeckMutationVariables>(UpdateDeckDocument, options);
+      }
+export type UpdateDeckMutationHookResult = ReturnType<typeof useUpdateDeckMutation>;
+export type UpdateDeckMutationResult = Apollo.MutationResult<UpdateDeckMutation>;
+export type UpdateDeckMutationOptions = Apollo.BaseMutationOptions<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export const LogoutDocument = gql`
+    mutation Logout($token: String!) {
+  logout(token: $token)
+}
+    `;
+export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMutationVariables>;
+
+/**
+ * __useLogoutMutation__
+ *
+ * To run a mutation, you first call `useLogoutMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLogoutMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [logoutMutation, { data, loading, error }] = useLogoutMutation({
+ *   variables: {
+ *      token: // value for 'token'
+ *   },
+ * });
+ */
+export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<LogoutMutation, LogoutMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, options);
+      }
+export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
+export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
+export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const DecksDocument = gql`
+    query decks($search: String, $year: Int, $semester: String, $languages: [String!]) {
+  decks(search: $search, year: $year, semester: $semester, languages: $languages) {
+    subject
+    module
+    moduleAlt
+    examiners
+    language
+    semester
+    year
+    hash
+    fileType
+    isValid
+  }
+}
+    `;
+
+/**
+ * __useDecksQuery__
+ *
+ * To run a query within a React component, call `useDecksQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDecksQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDecksQuery({
+ *   variables: {
+ *      search: // value for 'search'
+ *      year: // value for 'year'
+ *      semester: // value for 'semester'
+ *      languages: // value for 'languages'
+ *   },
+ * });
+ */
+export function useDecksQuery(baseOptions?: Apollo.QueryHookOptions<DecksQuery, DecksQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DecksQuery, DecksQueryVariables>(DecksDocument, options);
+      }
+export function useDecksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DecksQuery, DecksQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DecksQuery, DecksQueryVariables>(DecksDocument, options);
+        }
+export function useDecksSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DecksQuery, DecksQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DecksQuery, DecksQueryVariables>(DecksDocument, options);
+        }
+export type DecksQueryHookResult = ReturnType<typeof useDecksQuery>;
+export type DecksLazyQueryHookResult = ReturnType<typeof useDecksLazyQuery>;
+export type DecksSuspenseQueryHookResult = ReturnType<typeof useDecksSuspenseQuery>;
+export type DecksQueryResult = Apollo.QueryResult<DecksQuery, DecksQueryVariables>;
+export const IsActiveSessionDocument = gql`
+    query IsActiveSession($token: String!) {
+  isActiveSession(token: $token)
+}
+    `;
+
+/**
+ * __useIsActiveSessionQuery__
+ *
+ * To run a query within a React component, call `useIsActiveSessionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsActiveSessionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsActiveSessionQuery({
+ *   variables: {
+ *      token: // value for 'token'
+ *   },
+ * });
+ */
+export function useIsActiveSessionQuery(baseOptions: Apollo.QueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables> & ({ variables: IsActiveSessionQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
+      }
+export function useIsActiveSessionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
+        }
+export function useIsActiveSessionSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
+        }
+export type IsActiveSessionQueryHookResult = ReturnType<typeof useIsActiveSessionQuery>;
+export type IsActiveSessionLazyQueryHookResult = ReturnType<typeof useIsActiveSessionLazyQuery>;
+export type IsActiveSessionSuspenseQueryHookResult = ReturnType<typeof useIsActiveSessionSuspenseQuery>;
+export type IsActiveSessionQueryResult = Apollo.QueryResult<IsActiveSessionQuery, IsActiveSessionQueryVariables>;

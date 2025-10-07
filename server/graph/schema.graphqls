@@ -16,7 +16,7 @@ type Deck {
 }
 
 type Query {
-  decks(search: String, language: [String!], semester: String, year: Int): [Deck!]!
+  decks(search: String, languages: [String!], semester: String, year: Int): [Deck!]
   isActiveSession(token: String!): Boolean!
 }
 

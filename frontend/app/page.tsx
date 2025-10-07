@@ -3,7 +3,7 @@
 import DeckDialog from "@/components/dialogs/deck/deck-dialog";
 import { FacetedFilter } from "@/components/faceted-filter";
 import { useAuth } from "@/components/providers/auth-provider";
-import {useRefetch} from "@/components/providers/refetch-provider";
+import { useRefetch } from "@/components/providers/refetch-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,13 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Deck,
-  DecksDocument,
-  DecksQuery,
-  DecksQueryVariables,
-} from "@/lib/gql/generated/graphql";
-import { getClient } from "@/lib/graphql";
+import { useDecksQuery } from "@/lib/gql/generated/graphql";
 import { cn, downloadDeck } from "@/lib/utils";
 import {
   Calendar,
@@ -38,36 +32,32 @@ import {
   Library,
   User,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactCountryFlag from "react-country-flag";
+import { toast } from "sonner";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
-  const { refetchKey } = useRefetch()
-
-  const [decks, setDecks] = React.useState<Deck[]>([]);
   const [searchString, setSearchString] = React.useState<string | undefined>();
   const [languageFilter, setLanguageFilter] = useState<string[]>([]);
 
+  const { isAuthenticated } = useAuth();
+  const { refetchKey } = useRefetch();
+  const { loading, error, data, refetch } = useDecksQuery({
+    variables: {
+      languages: languageFilter.length ? languageFilter : undefined,
+      search: searchString,
+    },
+  });
+
+  useEffect(() => {
+    refetch();
+  }, [refetchKey]);
+
   const isMobile = useIsMobile();
+  const decks = data?.decks;
 
-  React.useEffect(() => {
-    const fetchDecks = async () => {
-      const client = getClient();
-      try {
-        const vars: DecksQueryVariables = {
-          search: searchString,
-          language: languageFilter.length ? languageFilter : undefined,
-        };
-        const deckData = await client.request<DecksQuery>(DecksDocument, vars);
-        setDecks(deckData.decks);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    void fetchDecks();
-  }, [searchString, languageFilter, refetchKey]);
+  if (error)
+    toast.error(`Beim laden der Stapel ist ein Fehler aufgetreten ${error}`);
 
   return (
     <div className="space-y-4">
@@ -85,7 +75,7 @@ export default function Home() {
         />
       </div>
       <div className="flex flex-wrap gap-4 items-start content-start">
-        {decks.map(
+        {decks?.map(
           (d) =>
             (d.isValid || isAuthenticated) && (
               <Card

@@ -1,16 +1,21 @@
-import { GraphQLClient } from "graphql-request";
+import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
+import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
+import { getCookie } from './cookie';
 
-const getEndpoint = () => {
-  if (typeof window !== "undefined") {
-    return new URL("/graphql", window.location.origin).toString();
-  }
-  return "";
-};
+const authLink = new ApolloLink((operation, forward) => {
+  const token = getCookie('token');
+  operation.setContext(({ headers = {} }) => ({
+    headers: { ...headers, TOKEN: token ?? '' },
+  }));
+  return forward(operation);
+});
 
-export const getClient = (token?: string) => {
-  return new GraphQLClient(getEndpoint(), {
-    headers: {
-      TOKEN: token ?? "",
-    },
-  });
-};
+const uploadLink = new UploadHttpLink({
+  uri: '/graphql',
+  credentials: 'include',
+});
+
+export const client = new ApolloClient({
+  link: authLink.concat(uploadLink),
+  cache: new InMemoryCache(),
+});

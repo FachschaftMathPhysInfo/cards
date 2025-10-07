@@ -19,7 +19,7 @@ import {
   Trash,
   User,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,70 +45,110 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ReactCountryFlag from "react-country-flag";
-import { getClient } from "@/lib/graphql";
-import {
-  CreateDeckDocument,
-  CreateDeckMutation,
-  Deck,
-  UpdateDeckDocument,
-  UpdateDeckMutation,
-  UpdateDeckMutationVariables,
-} from "@/lib/gql/generated/graphql";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRefetch } from "@/components/providers/refetch-provider";
+import {
+  Deck,
+  useCreateDeckMutation,
+  useUpdateDeckMutation,
+} from "@/lib/gql/generated/graphql";
 
 interface DeckDialogProps {
   trigger: React.ReactNode;
   deck?: Deck;
 }
 
-const FormSchema = z.object({
-  module: z
-    .string()
-    .min(2, {
-      message: "Das Modul muss mindestens zwei Zeichen lang sein",
-    })
-    .max(35, { message: "Es sind maximal 35 Zeichen erlaubt" }),
-  moduleAlt: z
-    .string()
-    .min(1, { message: "Kurzform darf nicht leer sein" })
-    .max(8, { message: "Es sind maximal 8 Zeichen erlaubt." }),
-  subject: z
-    .string()
-    .min(1, { message: "Bitte beschreibe kurz worum es geht" })
-    .max(45, { message: "Es sind maximal 45 Zeichen erlaubt" }),
-  examiners: z
-    .string()
-    .min(1, { message: "Bitte gib an, wer die Veranstaltung gehalten hat" })
-    .max(35, { message: "Es sind maximal 35 Zeichen erlaubt" }),
-  semester: z.string({
-    error: "Bitte wähle das Semester aus dem die Karten stammen",
-  }),
-  year: z
-    .number()
-    .min(1990, { message: "Bitte gib ein gültiges Jahr an" })
-    .max(new Date().getFullYear(), {
-      message: "Bitte gib ein gültiges Jahr an",
+const createFormSchema = (requireFile: boolean) =>
+  z.object({
+    module: z
+      .string()
+      .min(2, {
+        message: "Das Modul muss mindestens zwei Zeichen lang sein",
+      })
+      .max(35, { message: "Es sind maximal 35 Zeichen erlaubt" }),
+    moduleAlt: z
+      .string()
+      .min(1, { message: "Kurzform darf nicht leer sein" })
+      .max(8, { message: "Es sind maximal 8 Zeichen erlaubt." }),
+    subject: z
+      .string()
+      .min(1, { message: "Bitte beschreibe kurz worum es geht" })
+      .max(45, { message: "Es sind maximal 45 Zeichen erlaubt" }),
+    examiners: z
+      .string()
+      .min(1, { message: "Bitte gib an, wer die Veranstaltung gehalten hat" })
+      .max(35, { message: "Es sind maximal 35 Zeichen erlaubt" }),
+    semester: z.string({
+      error: "Bitte wähle das Semester aus dem die Karten stammen",
     }),
-  language: z
-    .string()
-    .min(1, { message: "Bitte wähle die Sprache deines Stapels" }),
-});
+    year: z
+      .number()
+      .min(1990, { message: "Bitte gib ein gültiges Jahr an" })
+      .max(new Date().getFullYear(), {
+        message: "Bitte gib ein gültiges Jahr an",
+      }),
+    language: z
+      .string()
+      .min(1, { message: "Bitte wähle die Sprache deines Stapels" }),
+    deck: requireFile
+      ? z
+          .instanceof(File, { message: "Bitte wähle eine Datei" })
+          .refine((f) => f.size <= 1024 * 1024 * 100, {
+            message: "Datei ist zu groß. Maximal sind 100MB erlaubt",
+          })
+      : z.instanceof(File).optional(),
+  });
 
 export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
-  const { token } = useAuth();
-  const { triggerRefetch } = useRefetch();
+  const isEditing = !!deck;
+  const schema = createFormSchema(!isEditing);
 
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | undefined>();
   const [loading, setLoading] = useState(false);
 
-  const isEditing = !!deck;
+  const { isAuthenticated } = useAuth();
+  const { triggerRefetch } = useRefetch();
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const [
+    createDeck,
+    { loading: newDeckLoading, error: newDeckError, data: newDeckData },
+  ] = useCreateDeckMutation();
+  const [
+    updateDeck,
+    {
+      loading: updateDeckLoading,
+      error: updateDeckError,
+      data: updateDeckData,
+    },
+  ] = useUpdateDeckMutation();
+
+  useEffect(() => {
+    if (newDeckError || updateDeckError) {
+      toast.error(
+        `Ein Fehler ist aufgetreten: ${newDeckError ?? updateDeckError}`
+      );
+      console.log(newDeckError)
+    }
+  }, [newDeckError, updateDeckError]);
+
+  useEffect(() => {
+    setLoading(updateDeckLoading || newDeckLoading);
+  }, [updateDeckLoading, newDeckLoading]);
+
+  useEffect(() => {
+    if (newDeckData || updateDeckData) {
+      toast.success(
+        `Stapel erfolgreich ${isEditing ? "bearbeitet" : "eingereicht"}!`
+      );
+      if (isAuthenticated) triggerRefetch();
+      setOpen(false);
+    }
+  }, [newDeckData, updateDeckData]);
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: deck ?? {
       module: "",
       moduleAlt: "",
@@ -120,40 +160,20 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
     },
   });
 
-  async function onNewDeckSubmit(data: z.infer<typeof FormSchema>) {
-    setLoading(true);
-
-    try {
-      const client = getClient();
-      await client.request<CreateDeckMutation>(CreateDeckDocument, data);
-      toast.success("Dein Stapel wurde erfolgreich eingereicht!");
-    } catch {
-      toast.error("Beim einreichen deines Stapels ist ein Fehler aufgetreten.");
-    }
-
-    triggerRefetch();
-    setOpen(false);
-    setLoading(false);
+  function onNewDeckSubmit(data: z.infer<typeof schema>) {
+    const { deck, ...metaWithoutDeck } = data
+    createDeck({
+      variables: {
+        meta: metaWithoutDeck,
+        file: data.deck,
+      },
+    });
   }
 
-  async function onUpdateDeckSubmit(data: z.infer<typeof FormSchema>) {
-    setLoading(true);
-
-    try {
-      const client = getClient(token);
-      const vars: UpdateDeckMutationVariables = {
-        meta: data,
-        hash: deck!.hash,
-      };
-      await client.request<UpdateDeckMutation>(UpdateDeckDocument, vars);
-      toast.success("Der Stapel wurde erfolgreich aktualisiert!");
-    } catch {
-      toast.error("Beim speichern des Stapels ist ein Fehler aufgetreten.");
-    }
-
-    triggerRefetch();
-    setOpen(false);
-    setLoading(false);
+  function onUpdateDeckSubmit(data: z.infer<typeof schema>) {
+    updateDeck({
+      variables: { hash: deck!.hash, meta: { ...data } },
+    });
   }
 
   return (
@@ -340,15 +360,27 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
               />
             </div>
             {!isEditing && (
-              <Dropzone
-                maxFiles={1}
-                accept={{ ".colpkg": [], ".apkg": [] }}
-                onDrop={(f) => setFile(f[0])}
-                src={file && [file]}
-              >
-                <DropzoneEmptyState />
-                <DropzoneContent />
-              </Dropzone>
+              <FormField
+                control={form.control}
+                name="deck"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Dropzone
+                        maxFiles={1}
+                        accept={{ ".colpkg": [], ".apkg": [] }}
+                        maxSize={1024 * 1024 * 100}
+                        onDrop={(f) => field.onChange(f[0])}
+                        src={field.value ? [field.value] : undefined}
+                      >
+                        <DropzoneEmptyState />
+                        <DropzoneContent />
+                      </Dropzone>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
             <DialogFooter>
               {isEditing && (

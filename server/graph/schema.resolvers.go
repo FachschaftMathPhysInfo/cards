@@ -159,7 +159,7 @@ func (r *mutationResolver) Logout(ctx context.Context, token string) (string, er
 }
 
 // Decks is the resolver for the decks field.
-func (r *queryResolver) Decks(ctx context.Context, search *string, language []string, semester *string, year *int) ([]*models.Deck, error) {
+func (r *queryResolver) Decks(ctx context.Context, search *string, languages []string, semester *string, year *int) ([]*models.Deck, error) {
 	var decks []*models.Deck
 	query := r.DB.NewSelect().
 		Model(&decks)
@@ -182,14 +182,16 @@ func (r *queryResolver) Decks(ctx context.Context, search *string, language []st
 			Where("year = ?", year)
 	}
 
-	if language != nil {
+	if languages != nil {
 		query = query.
-			Where("language IN (?)", bun.In(language))
+			Where("language IN (?)", bun.In(languages))
 	}
 
 	if err := query.
+		Order("created_at ASC").
 		Scan(ctx); err != nil {
-		return nil, err
+		fmt.Print(err)
+		return nil, fmt.Errorf("Internal Server Error")
 	}
 
 	return decks, nil
