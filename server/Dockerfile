@@ -1,16 +1,16 @@
-FROM golang:1.21.3-bullseye AS build
+# syntax=docker/dockerfile:1
 
-WORKDIR /go/src
+FROM golang:1.21.3
+
+WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY graph ./graph
-COPY server.go ./server.go
 COPY utils ./utils
+COPY *.go ./
 
-RUN CGO_ENABLED=0 go build -a -o graphql-server server.go
+RUN CGO_ENABLED=1 GOOS=linux go build -o /graphql server.go
 
-FROM gcr.io/distroless/static-debian11
-COPY --from=build /go/src/graphql-server /
-ENTRYPOINT ["/graphql-server"]
+CMD ["/graphql"]

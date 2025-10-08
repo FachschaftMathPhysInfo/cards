@@ -1,36 +1,13 @@
-version: '3'
-
+---
 volumes:
-  metadata:
-  deckfiles:
+  data:
 
 services:
-  database:
-    image: mongo
-    volumes:
-      - ./metadata/:/data/db
-    command: mongod --quiet --logpath /dev/null
-
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    env_file: .env
-    volumes:
-      - ./deckfiles/:/deckfiles
+  stapel:
+    build: .
+    image: cards:latest
     ports:
       - 8080:8080
-    depends_on:
-      - database
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - API_URL=${API_URL}
     env_file: .env
-    ports:
-      - 8081:80
-    depends_on:
-      - server 
+    volumes:
+      - ./data:/app/storage 

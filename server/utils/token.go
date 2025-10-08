@@ -1,69 +1,44 @@
 package utils
 
 import (
-	"encoding/json"
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
-	"net/http"
-	"os"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/jwtauth"
+	"github.com/FachschaftMathPhysInfo/cards/server/models"
+	"github.com/uptrace/bun"
 )
 
-// User represents a user in the system
-type User struct {
-	Username string `json:"username"`
+func randomURLSafeString(nBytes int) (string, error) {
+	if nBytes <= 0 {
+		return "", fmt.Errorf("nBytes must be > 0")
+	}
+	b := make([]byte, nBytes)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-// CreateJWTToken creates a JWT token for the given user
-func CreateJWTToken(user *User, tokenAuth *jwtauth.JWTAuth) (*string, error) {
-	userJSON, err := json.Marshal(user)
+func Login(ctx context.Context, db *bun.DB) (string, error) {
+	token, err := randomURLSafeString(30)
 	if err != nil {
-		return nil, err
+		return "", fmt.Errorf("Token generation failed")
 	}
 
-	// Create JWT token claims
-	claims := map[string]interface{}{"user": string(userJSON)}
-	jwtauth.SetExpiryIn(claims, time.Hour)
-	_, tokenString, err := tokenAuth.Encode(claims)
-	if err != nil {
-		return nil, err
+	session := &models.Session{
+		Token:     token,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 	}
 
-	return &tokenString, nil
-}
-
-func VerifyToken(tokenString string) error {
-	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		// Check the signing method and provide the secret key
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
-	})
-	if err != nil {
-		return err
+	if _, err := db.NewInsert().
+		Model(session).
+		Exec(ctx); err != nil {
+		fmt.Print(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
-	}
-
-	return nil
-}
-
-func ReturnJWTToken(username string, w http.ResponseWriter, r *http.Request) {
-	user := &User{Username: username}
-	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("JWT_SECRET_KEY")), nil)
-	jwtToken, err := CreateJWTToken(user, tokenAuth)
-	if err != nil {
-		http.Error(w, "Failed to create JWT token", http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-
-	redirectUrl := fmt.Sprintf("%s?token=%s", os.Getenv("FRONTEND_URL"), *jwtToken)
-	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
+	return token, nil
 }

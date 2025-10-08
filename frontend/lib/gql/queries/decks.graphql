@@ -1,0 +1,14 @@
+query decks($search: String, $year: Int, $semester: String, $languages: [String!]) {
+  decks(search: $search, year: $year, semester: $semester, languages: $languages) {
+    subject
+    module
+    moduleAlt
+    examiners
+    language
+    semester
+    year
+    hash
+    fileType
+    isValid
+  }
+}

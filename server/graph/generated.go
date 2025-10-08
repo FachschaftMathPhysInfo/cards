@@ -14,7 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/FachschaftMathPhysInfo/cards/server/graph/model"
+	"github.com/FachschaftMathPhysInfo/cards/server/models"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -44,12 +44,13 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	Auth func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
 	Deck struct {
 		Examiners func(childComplexity int) int
-		FileType  func(childComplexity int) int
+		Filetype  func(childComplexity int) int
 		Hash      func(childComplexity int) int
 		IsValid   func(childComplexity int) int
 		Language  func(childComplexity int) int
@@ -61,27 +62,29 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateDeck func(childComplexity int, input model.NewDeck) int
-		DeleteDeck func(childComplexity int, hash string, jwtToken string) int
-		SetValid   func(childComplexity int, hash string, jwtToken string) int
-		UpdateDeck func(childComplexity int, hash string, input model.NewDeck, jwtToken string) int
+		CreateDeck func(childComplexity int, meta models.Deck, file graphql.Upload) int
+		DeleteDeck func(childComplexity int, hash string) int
+		Logout     func(childComplexity int, token string) int
+		SetValid   func(childComplexity int, hash string) int
+		UpdateDeck func(childComplexity int, hash string, meta models.Deck) int
 	}
 
 	Query struct {
-		Decks        func(childComplexity int) int
-		IsValidToken func(childComplexity int, jwtToken string) int
+		Decks           func(childComplexity int, search *string, languages []string, semester *string, year *int) int
+		IsActiveSession func(childComplexity int, token string) int
 	}
 }
 
 type MutationResolver interface {
-	CreateDeck(ctx context.Context, input model.NewDeck) (*model.Deck, error)
-	UpdateDeck(ctx context.Context, hash string, input model.NewDeck, jwtToken string) (*string, error)
-	DeleteDeck(ctx context.Context, hash string, jwtToken string) (*string, error)
-	SetValid(ctx context.Context, hash string, jwtToken string) (*string, error)
+	CreateDeck(ctx context.Context, meta models.Deck, file graphql.Upload) (string, error)
+	UpdateDeck(ctx context.Context, hash string, meta models.Deck) (string, error)
+	DeleteDeck(ctx context.Context, hash string) (string, error)
+	SetValid(ctx context.Context, hash string) (string, error)
+	Logout(ctx context.Context, token string) (string, error)
 }
 type QueryResolver interface {
-	Decks(ctx context.Context) ([]*model.Deck, error)
-	IsValidToken(ctx context.Context, jwtToken string) (bool, error)
+	Decks(ctx context.Context, search *string, languages []string, semester *string, year *int) ([]*models.Deck, error)
+	IsActiveSession(ctx context.Context, token string) (bool, error)
 }
 
 type executableSchema struct {
@@ -111,11 +114,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.Deck.Examiners(childComplexity), true
 
 	case "Deck.fileType":
-		if e.complexity.Deck.FileType == nil {
+		if e.complexity.Deck.Filetype == nil {
 			break
 		}
 
-		return e.complexity.Deck.FileType(childComplexity), true
+		return e.complexity.Deck.Filetype(childComplexity), true
 
 	case "Deck.hash":
 		if e.complexity.Deck.Hash == nil {
@@ -183,7 +186,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateDeck(childComplexity, args["input"].(model.NewDeck)), true
+		return e.complexity.Mutation.CreateDeck(childComplexity, args["meta"].(models.Deck), args["file"].(graphql.Upload)), true
 
 	case "Mutation.deleteDeck":
 		if e.complexity.Mutation.DeleteDeck == nil {
@@ -195,7 +198,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteDeck(childComplexity, args["hash"].(string), args["jwtToken"].(string)), true
+		return e.complexity.Mutation.DeleteDeck(childComplexity, args["hash"].(string)), true
+
+	case "Mutation.logout":
+		if e.complexity.Mutation.Logout == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_logout_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Logout(childComplexity, args["token"].(string)), true
 
 	case "Mutation.setValid":
 		if e.complexity.Mutation.SetValid == nil {
@@ -207,7 +222,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SetValid(childComplexity, args["hash"].(string), args["jwtToken"].(string)), true
+		return e.complexity.Mutation.SetValid(childComplexity, args["hash"].(string)), true
 
 	case "Mutation.updateDeck":
 		if e.complexity.Mutation.UpdateDeck == nil {
@@ -219,26 +234,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateDeck(childComplexity, args["hash"].(string), args["input"].(model.NewDeck), args["jwtToken"].(string)), true
+		return e.complexity.Mutation.UpdateDeck(childComplexity, args["hash"].(string), args["meta"].(models.Deck)), true
 
 	case "Query.decks":
 		if e.complexity.Query.Decks == nil {
 			break
 		}
 
-		return e.complexity.Query.Decks(childComplexity), true
-
-	case "Query.isValidToken":
-		if e.complexity.Query.IsValidToken == nil {
-			break
-		}
-
-		args, err := ec.field_Query_isValidToken_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_decks_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.IsValidToken(childComplexity, args["jwtToken"].(string)), true
+		return e.complexity.Query.Decks(childComplexity, args["search"].(*string), args["languages"].([]string), args["semester"].(*string), args["year"].(*int)), true
+
+	case "Query.isActiveSession":
+		if e.complexity.Query.IsActiveSession == nil {
+			break
+		}
+
+		args, err := ec.field_Query_isActiveSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.IsActiveSession(childComplexity, args["token"].(string)), true
 
 	}
 	return 0, false
@@ -368,15 +388,24 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createDeck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.NewDeck
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐNewDeck(ctx, tmp)
+	var arg0 models.Deck
+	if tmp, ok := rawArgs["meta"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("meta"))
+		arg0, err = ec.unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeck(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["meta"] = arg0
+	var arg1 graphql.Upload
+	if tmp, ok := rawArgs["file"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+		arg1, err = ec.unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["file"] = arg1
 	return args, nil
 }
 
@@ -392,15 +421,21 @@ func (ec *executionContext) field_Mutation_deleteDeck_args(ctx context.Context, 
 		}
 	}
 	args["hash"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["jwtToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_logout_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["jwtToken"] = arg1
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -416,15 +451,6 @@ func (ec *executionContext) field_Mutation_setValid_args(ctx context.Context, ra
 		}
 	}
 	args["hash"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["jwtToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["jwtToken"] = arg1
 	return args, nil
 }
 
@@ -440,24 +466,15 @@ func (ec *executionContext) field_Mutation_updateDeck_args(ctx context.Context, 
 		}
 	}
 	args["hash"] = arg0
-	var arg1 model.NewDeck
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐNewDeck(ctx, tmp)
+	var arg1 models.Deck
+	if tmp, ok := rawArgs["meta"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("meta"))
+		arg1, err = ec.unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeck(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["jwtToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["jwtToken"] = arg2
+	args["meta"] = arg1
 	return args, nil
 }
 
@@ -476,18 +493,60 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_isValidToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_decks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg0
+	var arg1 []string
+	if tmp, ok := rawArgs["languages"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("languages"))
+		arg1, err = ec.unmarshalOString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["languages"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["semester"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("semester"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["semester"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["year"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["year"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_isActiveSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["jwtToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwtToken"))
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["jwtToken"] = arg0
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -529,7 +588,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Deck_subject(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_subject(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_subject(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -550,11 +609,14 @@ func (ec *executionContext) _Deck_subject(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_subject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -570,7 +632,7 @@ func (ec *executionContext) fieldContext_Deck_subject(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_module(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_module(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_module(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -614,7 +676,7 @@ func (ec *executionContext) fieldContext_Deck_module(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_moduleAlt(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_moduleAlt(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_moduleAlt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -635,11 +697,14 @@ func (ec *executionContext) _Deck_moduleAlt(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_moduleAlt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -655,7 +720,7 @@ func (ec *executionContext) fieldContext_Deck_moduleAlt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_examiners(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_examiners(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_examiners(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -676,11 +741,14 @@ func (ec *executionContext) _Deck_examiners(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_examiners(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -696,7 +764,7 @@ func (ec *executionContext) fieldContext_Deck_examiners(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_language(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_language(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_language(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -717,11 +785,14 @@ func (ec *executionContext) _Deck_language(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -737,7 +808,7 @@ func (ec *executionContext) fieldContext_Deck_language(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_semester(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_semester(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_semester(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -758,11 +829,14 @@ func (ec *executionContext) _Deck_semester(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_semester(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -778,7 +852,7 @@ func (ec *executionContext) fieldContext_Deck_semester(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_year(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_year(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_year(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -799,11 +873,14 @@ func (ec *executionContext) _Deck_year(ctx context.Context, field graphql.Collec
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_year(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -819,7 +896,7 @@ func (ec *executionContext) fieldContext_Deck_year(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_hash(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_hash(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_hash(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -863,7 +940,7 @@ func (ec *executionContext) fieldContext_Deck_hash(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_fileType(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_fileType(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_fileType(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -877,18 +954,21 @@ func (ec *executionContext) _Deck_fileType(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.FileType, nil
+		return obj.Filetype, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_fileType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -904,7 +984,7 @@ func (ec *executionContext) fieldContext_Deck_fileType(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Deck_isValid(ctx context.Context, field graphql.CollectedField, obj *model.Deck) (ret graphql.Marshaler) {
+func (ec *executionContext) _Deck_isValid(ctx context.Context, field graphql.CollectedField, obj *models.Deck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Deck_isValid(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -930,9 +1010,9 @@ func (ec *executionContext) _Deck_isValid(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Deck_isValid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -962,7 +1042,7 @@ func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateDeck(rctx, fc.Args["input"].(model.NewDeck))
+		return ec.resolvers.Mutation().CreateDeck(rctx, fc.Args["meta"].(models.Deck), fc.Args["file"].(graphql.Upload))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -974,9 +1054,9 @@ func (ec *executionContext) _Mutation_createDeck(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Deck)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createDeck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -986,29 +1066,7 @@ func (ec *executionContext) fieldContext_Mutation_createDeck(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "subject":
-				return ec.fieldContext_Deck_subject(ctx, field)
-			case "module":
-				return ec.fieldContext_Deck_module(ctx, field)
-			case "moduleAlt":
-				return ec.fieldContext_Deck_moduleAlt(ctx, field)
-			case "examiners":
-				return ec.fieldContext_Deck_examiners(ctx, field)
-			case "language":
-				return ec.fieldContext_Deck_language(ctx, field)
-			case "semester":
-				return ec.fieldContext_Deck_semester(ctx, field)
-			case "year":
-				return ec.fieldContext_Deck_year(ctx, field)
-			case "hash":
-				return ec.fieldContext_Deck_hash(ctx, field)
-			case "fileType":
-				return ec.fieldContext_Deck_fileType(ctx, field)
-			case "isValid":
-				return ec.fieldContext_Deck_isValid(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	defer func() {
@@ -1038,19 +1096,42 @@ func (ec *executionContext) _Mutation_updateDeck(ctx context.Context, field grap
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["hash"].(string), fc.Args["input"].(model.NewDeck), fc.Args["jwtToken"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateDeck(rctx, fc.Args["hash"].(string), fc.Args["meta"].(models.Deck))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateDeck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1090,19 +1171,42 @@ func (ec *executionContext) _Mutation_deleteDeck(ctx context.Context, field grap
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteDeck(rctx, fc.Args["hash"].(string), fc.Args["jwtToken"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteDeck(rctx, fc.Args["hash"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteDeck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1142,19 +1246,42 @@ func (ec *executionContext) _Mutation_setValid(ctx context.Context, field graphq
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SetValid(rctx, fc.Args["hash"].(string), fc.Args["jwtToken"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SetValid(rctx, fc.Args["hash"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_setValid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1181,6 +1308,61 @@ func (ec *executionContext) fieldContext_Mutation_setValid(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_logout(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Logout(rctx, fc.Args["token"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_logout(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_logout_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_decks(ctx, field)
 	if err != nil {
@@ -1195,21 +1377,18 @@ func (ec *executionContext) _Query_decks(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Decks(rctx)
+		return ec.resolvers.Query().Decks(rctx, fc.Args["search"].(*string), fc.Args["languages"].([]string), fc.Args["semester"].(*string), fc.Args["year"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Deck)
+	res := resTmp.([]*models.Deck)
 	fc.Result = res
-	return ec.marshalNDeck2ᚕᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeckᚄ(ctx, field.Selections, res)
+	return ec.marshalODeck2ᚕᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeckᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1244,11 +1423,22 @@ func (ec *executionContext) fieldContext_Query_decks(ctx context.Context, field 
 			return nil, fmt.Errorf("no field named %q was found under type Deck", field.Name)
 		},
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_decks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_isValidToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_isValidToken(ctx, field)
+func (ec *executionContext) _Query_isActiveSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_isActiveSession(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1261,7 +1451,7 @@ func (ec *executionContext) _Query_isValidToken(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().IsValidToken(rctx, fc.Args["jwtToken"].(string))
+		return ec.resolvers.Query().IsActiveSession(rctx, fc.Args["token"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1278,7 +1468,7 @@ func (ec *executionContext) _Query_isValidToken(ctx context.Context, field graph
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_isValidToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_isActiveSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1295,7 +1485,7 @@ func (ec *executionContext) fieldContext_Query_isValidToken(ctx context.Context,
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_isValidToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_isActiveSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3204,14 +3394,14 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj interface{}) (model.NewDeck, error) {
-	var it model.NewDeck
+func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj interface{}) (models.Deck, error) {
+	var it models.Deck
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"subject", "module", "moduleAlt", "examiners", "language", "semester", "year", "file"}
+	fieldsInOrder := [...]string{"subject", "module", "moduleAlt", "examiners", "language", "semester", "year"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3220,7 +3410,7 @@ func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj inter
 		switch k {
 		case "subject":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3234,46 +3424,39 @@ func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj inter
 			it.Module = data
 		case "moduleAlt":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moduleAlt"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ModuleAlt = data
 		case "examiners":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("examiners"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Examiners = data
 		case "language":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("language"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Language = data
 		case "semester":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("semester"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Semester = data
 		case "year":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Year = data
-		case "file":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
-			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.File = data
 		}
 	}
 
@@ -3290,7 +3473,7 @@ func (ec *executionContext) unmarshalInputNewDeck(ctx context.Context, obj inter
 
 var deckImplementors = []string{"Deck"}
 
-func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj *model.Deck) graphql.Marshaler {
+func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj *models.Deck) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, deckImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3301,6 +3484,9 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = graphql.MarshalString("Deck")
 		case "subject":
 			out.Values[i] = ec._Deck_subject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "module":
 			out.Values[i] = ec._Deck_module(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3308,14 +3494,29 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "moduleAlt":
 			out.Values[i] = ec._Deck_moduleAlt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "examiners":
 			out.Values[i] = ec._Deck_examiners(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "language":
 			out.Values[i] = ec._Deck_language(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "semester":
 			out.Values[i] = ec._Deck_semester(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "year":
 			out.Values[i] = ec._Deck_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "hash":
 			out.Values[i] = ec._Deck_hash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3323,6 +3524,9 @@ func (ec *executionContext) _Deck(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "fileType":
 			out.Values[i] = ec._Deck_fileType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "isValid":
 			out.Values[i] = ec._Deck_isValid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3381,14 +3585,30 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateDeck(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "deleteDeck":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteDeck(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "setValid":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_setValid(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "logout":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_logout(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3441,9 +3661,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_decks(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -3453,7 +3670,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "isValidToken":
+		case "isActiveSession":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -3462,7 +3679,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_isValidToken(ctx, field)
+				res = ec._Query_isActiveSession(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -3847,55 +4064,28 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx context.Context, sel ast.SelectionSet, v model.Deck) graphql.Marshaler {
-	return ec._Deck(ctx, sel, &v)
+func (ec *executionContext) unmarshalNBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+	res, err := graphql.UnmarshalBoolean(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDeck2ᚕᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Deck) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
+func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast.SelectionSet, v *bool) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
 	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
+	res := graphql.MarshalBoolean(*v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
-
-	return ret
+	return res
 }
 
-func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐDeck(ctx context.Context, sel ast.SelectionSet, v *model.Deck) graphql.Marshaler {
+func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeck(ctx context.Context, sel ast.SelectionSet, v *models.Deck) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3905,7 +4095,22 @@ func (ec *executionContext) marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInf
 	return ec._Deck(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋgraphᚋmodelᚐNewDeck(ctx context.Context, v interface{}) (model.NewDeck, error) {
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNNewDeck2githubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeck(ctx context.Context, v interface{}) (models.Deck, error) {
 	res, err := ec.unmarshalInputNewDeck(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3917,6 +4122,21 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
+	res, err := graphql.UnmarshalUpload(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v graphql.Upload) graphql.Marshaler {
+	res := graphql.MarshalUpload(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4204,6 +4424,53 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalODeck2ᚕᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeckᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Deck) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDeck2ᚖgithubᚗcomᚋFachschaftMathPhysInfoᚋcardsᚋserverᚋmodelsᚐDeck(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -4220,6 +4487,44 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -4233,22 +4538,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (*graphql.Upload, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalUpload(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalUpload(*v)
 	return res
 }
 
