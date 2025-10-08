@@ -157,7 +157,7 @@ export const CreateDeckDocument = gql`
   createDeck(meta: $meta, file: $file)
 }
     `;
-export type CreateDeckMutationFn = Apollo.MutationFunction<CreateDeckMutation, CreateDeckMutationVariables>;
+export type CreateDeckMutationFn = typeof useCreateDeckMutation
 
 /**
  * __useCreateDeckMutation__
@@ -177,19 +177,19 @@ export type CreateDeckMutationFn = Apollo.MutationFunction<CreateDeckMutation, C
  *   },
  * });
  */
-export function useCreateDeckMutation(baseOptions?: Apollo.MutationHookOptions<CreateDeckMutation, CreateDeckMutationVariables>) {
+export function useCreateDeckMutation(baseOptions?: Apollo.MutationFunctionOptions<CreateDeckMutation, CreateDeckMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useMutation<CreateDeckMutation, CreateDeckMutationVariables>(CreateDeckDocument, options);
       }
 export type CreateDeckMutationHookResult = ReturnType<typeof useCreateDeckMutation>;
 export type CreateDeckMutationResult = Apollo.MutationResult<CreateDeckMutation>;
-export type CreateDeckMutationOptions = Apollo.BaseMutationOptions<CreateDeckMutation, CreateDeckMutationVariables>;
+export type CreateDeckMutationOptions = typeof useCreateDeckMutation
 export const UpdateDeckDocument = gql`
     mutation UpdateDeck($hash: String!, $meta: NewDeck!) {
   updateDeck(hash: $hash, meta: $meta)
 }
     `;
-export type UpdateDeckMutationFn = Apollo.MutationFunction<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export type UpdateDeckMutationFn = typeof useUpdateDeckMutation
 
 /**
  * __useUpdateDeckMutation__
@@ -215,13 +215,13 @@ export function useUpdateDeckMutation(baseOptions?: Apollo.MutationHookOptions<U
       }
 export type UpdateDeckMutationHookResult = ReturnType<typeof useUpdateDeckMutation>;
 export type UpdateDeckMutationResult = Apollo.MutationResult<UpdateDeckMutation>;
-export type UpdateDeckMutationOptions = Apollo.BaseMutationOptions<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export type UpdateDeckMutationOptions = Apollo.MutationFunctionOptions<UpdateDeckMutation, UpdateDeckMutationVariables>;
 export const DeleteDeckDocument = gql`
     mutation DeleteDeck($hash: String!) {
   deleteDeck(hash: $hash)
 }
     `;
-export type DeleteDeckMutationFn = Apollo.MutationFunction<DeleteDeckMutation, DeleteDeckMutationVariables>;
+export type DeleteDeckMutationFn = typeof useDeleteDeckMutation 
 
 /**
  * __useDeleteDeckMutation__
@@ -246,13 +246,13 @@ export function useDeleteDeckMutation(baseOptions?: Apollo.MutationHookOptions<D
       }
 export type DeleteDeckMutationHookResult = ReturnType<typeof useDeleteDeckMutation>;
 export type DeleteDeckMutationResult = Apollo.MutationResult<DeleteDeckMutation>;
-export type DeleteDeckMutationOptions = Apollo.BaseMutationOptions<DeleteDeckMutation, DeleteDeckMutationVariables>;
+export type DeleteDeckMutationOptions = Apollo.MutationFunctionOptions<DeleteDeckMutation, DeleteDeckMutationVariables>;
 export const SetValidDocument = gql`
     mutation SetValid($hash: String!) {
   setValid(hash: $hash)
 }
     `;
-export type SetValidMutationFn = Apollo.MutationFunction<SetValidMutation, SetValidMutationVariables>;
+export type SetValidMutationFn = typeof useSetValidMutation
 
 /**
  * __useSetValidMutation__
@@ -277,13 +277,13 @@ export function useSetValidMutation(baseOptions?: Apollo.MutationHookOptions<Set
       }
 export type SetValidMutationHookResult = ReturnType<typeof useSetValidMutation>;
 export type SetValidMutationResult = Apollo.MutationResult<SetValidMutation>;
-export type SetValidMutationOptions = Apollo.BaseMutationOptions<SetValidMutation, SetValidMutationVariables>;
+export type SetValidMutationOptions = Apollo.MutationFunctionOptions<SetValidMutation, SetValidMutationVariables>;
 export const LogoutDocument = gql`
     mutation Logout($token: String!) {
   logout(token: $token)
 }
     `;
-export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMutationVariables>;
+export type LogoutMutationFn = typeof useLogoutMutation
 
 /**
  * __useLogoutMutation__
@@ -308,7 +308,7 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
       }
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
-export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export type LogoutMutationOptions = Apollo.MutationFunctionOptions<LogoutMutation, LogoutMutationVariables>;
 export const DecksDocument = gql`
     query decks($search: String, $year: Int, $semester: String, $languages: [String!]) {
   decks(search: $search, year: $year, semester: $semester, languages: $languages) {
@@ -391,11 +391,6 @@ export function useIsActiveSessionLazyQuery(baseOptions?: Apollo.LazyQueryHookOp
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
         }
-export function useIsActiveSessionSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
-        }
 export type IsActiveSessionQueryHookResult = ReturnType<typeof useIsActiveSessionQuery>;
 export type IsActiveSessionLazyQueryHookResult = ReturnType<typeof useIsActiveSessionLazyQuery>;
-export type IsActiveSessionSuspenseQueryHookResult = ReturnType<typeof useIsActiveSessionSuspenseQuery>;
 export type IsActiveSessionQueryResult = Apollo.QueryResult<IsActiveSessionQuery, IsActiveSessionQueryVariables>;

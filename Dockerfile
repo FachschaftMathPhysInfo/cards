@@ -7,12 +7,9 @@ WORKDIR /app
 
 COPY frontend/package*.json ./
 COPY frontend/tsconfig.json ./
-COPY frontend/next.config.mjs ./
 
 RUN npm install
 COPY frontend/ .
-COPY server/graph/schema.graphqls .
-RUN npm run codegen
 RUN npm run build
 
 

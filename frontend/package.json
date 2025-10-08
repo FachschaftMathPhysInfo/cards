@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint",
-    "codegen": "graphql-codegen --config codegen.ts && sed -i \"s|import \\* as Apollo from '@apollo/client';|import \\* as Apollo from '@apollo/client/react';|\" ./lib/gql/generated/graphql.ts"
+    "lint": "eslint"
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
