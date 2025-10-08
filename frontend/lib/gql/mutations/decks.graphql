@@ -5,3 +5,11 @@ mutation CreateDeck($meta: NewDeck!, $file: Upload!) {
 mutation UpdateDeck($hash: String!, $meta: NewDeck!) {
   updateDeck(hash: $hash, meta: $meta)
 }
+
+mutation DeleteDeck($hash: String!) {
+  deleteDeck(hash: $hash)
+}
+
+mutation SetValid($hash: String!) {
+  setValid(hash: $hash)
+}

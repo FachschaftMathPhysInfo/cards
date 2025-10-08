@@ -113,6 +113,20 @@ export type UpdateDeckMutationVariables = Exact<{
 
 export type UpdateDeckMutation = { updateDeck: string };
 
+export type DeleteDeckMutationVariables = Exact<{
+  hash: Scalars['String']['input'];
+}>;
+
+
+export type DeleteDeckMutation = { deleteDeck: string };
+
+export type SetValidMutationVariables = Exact<{
+  hash: Scalars['String']['input'];
+}>;
+
+
+export type SetValidMutation = { setValid: string };
+
 export type LogoutMutationVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
@@ -202,6 +216,68 @@ export function useUpdateDeckMutation(baseOptions?: Apollo.MutationHookOptions<U
 export type UpdateDeckMutationHookResult = ReturnType<typeof useUpdateDeckMutation>;
 export type UpdateDeckMutationResult = Apollo.MutationResult<UpdateDeckMutation>;
 export type UpdateDeckMutationOptions = Apollo.BaseMutationOptions<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export const DeleteDeckDocument = gql`
+    mutation DeleteDeck($hash: String!) {
+  deleteDeck(hash: $hash)
+}
+    `;
+export type DeleteDeckMutationFn = Apollo.MutationFunction<DeleteDeckMutation, DeleteDeckMutationVariables>;
+
+/**
+ * __useDeleteDeckMutation__
+ *
+ * To run a mutation, you first call `useDeleteDeckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteDeckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteDeckMutation, { data, loading, error }] = useDeleteDeckMutation({
+ *   variables: {
+ *      hash: // value for 'hash'
+ *   },
+ * });
+ */
+export function useDeleteDeckMutation(baseOptions?: Apollo.MutationHookOptions<DeleteDeckMutation, DeleteDeckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteDeckMutation, DeleteDeckMutationVariables>(DeleteDeckDocument, options);
+      }
+export type DeleteDeckMutationHookResult = ReturnType<typeof useDeleteDeckMutation>;
+export type DeleteDeckMutationResult = Apollo.MutationResult<DeleteDeckMutation>;
+export type DeleteDeckMutationOptions = Apollo.BaseMutationOptions<DeleteDeckMutation, DeleteDeckMutationVariables>;
+export const SetValidDocument = gql`
+    mutation SetValid($hash: String!) {
+  setValid(hash: $hash)
+}
+    `;
+export type SetValidMutationFn = Apollo.MutationFunction<SetValidMutation, SetValidMutationVariables>;
+
+/**
+ * __useSetValidMutation__
+ *
+ * To run a mutation, you first call `useSetValidMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetValidMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setValidMutation, { data, loading, error }] = useSetValidMutation({
+ *   variables: {
+ *      hash: // value for 'hash'
+ *   },
+ * });
+ */
+export function useSetValidMutation(baseOptions?: Apollo.MutationHookOptions<SetValidMutation, SetValidMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetValidMutation, SetValidMutationVariables>(SetValidDocument, options);
+      }
+export type SetValidMutationHookResult = ReturnType<typeof useSetValidMutation>;
+export type SetValidMutationResult = Apollo.MutationResult<SetValidMutation>;
+export type SetValidMutationOptions = Apollo.BaseMutationOptions<SetValidMutation, SetValidMutationVariables>;
 export const LogoutDocument = gql`
     mutation Logout($token: String!) {
   logout(token: $token)

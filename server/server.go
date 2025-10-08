@@ -11,6 +11,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/FachschaftMathPhysInfo/cards/server/db"
 	"github.com/FachschaftMathPhysInfo/cards/server/graph"
@@ -75,6 +76,10 @@ func main() {
 
 	// Serve GraphQL endpoint
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(gc))
+	srv.AddTransport(transport.MultipartForm{
+		MaxMemory:     32 << 20,
+		MaxUploadSize: 100 << 20,
+	})
 	router.Handle("/graphql", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqCtx := r.Context()
 		token := r.Header.Get(tokenHeader)
@@ -85,8 +90,8 @@ func main() {
 	}))
 
 	// Serve deck files
-	fileServer := http.FileServer(http.Dir("./deckfiles"))
-	router.Handle("/deckfiles/*", http.StripPrefix("/deckfiles/", fileServer))
+	fileServer := http.StripPrefix("/deckfiles/", http.FileServer(http.Dir("./storage/deckfiles")))
+	router.Handle("/deckfiles/*", fileServer)
 
 	frontendUrl, _ := url.Parse("http://localhost:3000")
 	router.Handle("/*", httputil.NewSingleHostReverseProxy(frontendUrl))

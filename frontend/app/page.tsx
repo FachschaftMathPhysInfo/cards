@@ -15,13 +15,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useDecksQuery } from "@/lib/gql/generated/graphql";
+import {
+  useDecksQuery,
+  useSetValidMutation,
+} from "@/lib/gql/generated/graphql";
 import { cn, downloadDeck } from "@/lib/utils";
 import {
   Calendar,
@@ -42,22 +46,41 @@ export default function Home() {
 
   const { isAuthenticated } = useAuth();
   const { refetchKey } = useRefetch();
-  const { loading, error, data, refetch } = useDecksQuery({
+  const {
+    error: decksError,
+    data: decksData,
+    refetch: decksRefetch,
+  } = useDecksQuery({
     variables: {
       languages: languageFilter.length ? languageFilter : undefined,
       search: searchString,
     },
   });
 
+  const [
+    setValid,
+    { loading: setValidLoading, error: setValidError, data: setValidData },
+  ] = useSetValidMutation();
+
   useEffect(() => {
-    refetch();
+    if (setValidData) {
+      toast.success("Stapel erfolgreich akzeptiert!");
+      decksRefetch();
+    }
+  }, [setValidData]);
+
+  useEffect(() => {
+    decksRefetch();
   }, [refetchKey]);
 
-  const isMobile = useIsMobile();
-  const decks = data?.decks;
+  useEffect(() => {
+    if (decksError || setValidError) {
+      toast.error(`Ein Fehler ist aufgetreten: ${decksError ?? setValidError}`);
+    }
+  }, [decksError, setValidError]);
 
-  if (error)
-    toast.error(`Beim laden der Stapel ist ein Fehler aufgetreten ${error}`);
+  const isMobile = useIsMobile();
+  const decks = decksData?.decks;
 
   return (
     <div className="space-y-4">
@@ -110,7 +133,7 @@ export default function Home() {
                 <CardFooter>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button onClick={() => downloadDeck(d.hash)}>
+                      <Button onClick={() => downloadDeck(d)}>
                         <Download />
                       </Button>
                     </TooltipTrigger>
@@ -129,8 +152,14 @@ export default function Home() {
                       {!d.isValid && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button className="ml-auto bg-green-500 hover:bg-green-400">
-                              <Check />
+                            <Button
+                              className="ml-auto bg-green-500 hover:bg-green-400"
+                              disabled={setValidLoading}
+                              onClick={() =>
+                                setValid({ variables: { hash: d.hash } })
+                              }
+                            >
+                              {setValidLoading ? <Spinner /> : <Check />}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Stapel akzeptieren</TooltipContent>

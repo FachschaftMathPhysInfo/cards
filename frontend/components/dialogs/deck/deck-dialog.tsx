@@ -52,8 +52,20 @@ import { useRefetch } from "@/components/providers/refetch-provider";
 import {
   Deck,
   useCreateDeckMutation,
+  useDeleteDeckMutation,
   useUpdateDeckMutation,
 } from "@/lib/gql/generated/graphql";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DeckDialogProps {
   trigger: React.ReactNode;
@@ -123,15 +135,24 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
       data: updateDeckData,
     },
   ] = useUpdateDeckMutation();
+  const [
+    deleteDeck,
+    {
+      loading: deleteDeckLoading,
+      error: deleteDeckError,
+      data: deleteDeckData,
+    },
+  ] = useDeleteDeckMutation();
 
   useEffect(() => {
-    if (newDeckError || updateDeckError) {
+    if (newDeckError || updateDeckError || deleteDeckError) {
       toast.error(
-        `Ein Fehler ist aufgetreten: ${newDeckError ?? updateDeckError}`
+        `Ein Fehler ist aufgetreten: ${
+          newDeckError ?? updateDeckError ?? deleteDeckError
+        }`
       );
-      console.log(newDeckError)
     }
-  }, [newDeckError, updateDeckError]);
+  }, [newDeckError, updateDeckError, deleteDeckError]);
 
   useEffect(() => {
     setLoading(updateDeckLoading || newDeckLoading);
@@ -147,6 +168,14 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
     }
   }, [newDeckData, updateDeckData]);
 
+  useEffect(() => {
+    if (deleteDeckData) {
+      toast.success("Stapel erfolgreich gelöscht");
+      setOpen(false);
+      triggerRefetch();
+    }
+  }, [deleteDeckData]);
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: deck ?? {
@@ -161,7 +190,7 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
   });
 
   function onNewDeckSubmit(data: z.infer<typeof schema>) {
-    const { deck, ...metaWithoutDeck } = data
+    const { deck, ...metaWithoutDeck } = data;
     createDeck({
       variables: {
         meta: metaWithoutDeck,
@@ -384,9 +413,31 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
             )}
             <DialogFooter>
               {isEditing && (
-                <Button className="mr-auto" variant="destructive" type="button">
-                  <Trash />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger className="mr-auto">
+                    <Button variant="destructive" type="button">
+                      {deleteDeckLoading ? <Spinner /> : <Trash />}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Bist du sicher?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Der Stapel wird unwiderufilch gelöscht.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() =>
+                          deleteDeck({ variables: { hash: deck.hash } })
+                        }
+                      >
+                        Ja, löschen
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
               <DialogClose asChild>
                 <Button type="button" variant="outline">

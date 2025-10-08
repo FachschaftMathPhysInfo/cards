@@ -1,41 +1,29 @@
 import { clsx, type ClassValue } from "clsx";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+import { Deck } from "./gql/generated/graphql";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export async function downloadDeck(hash: string) {
+export async function downloadDeck(deck: Deck) {
   try {
-    const apiUrl = "/deckfiles/" + encodeURIComponent(hash);
+    const apiUrl = "/deckfiles/" + encodeURIComponent(deck.hash + deck.fileType);
     const res = await fetch(apiUrl);
-    if (!res.ok) toast.error("Proxy failed: " + res.status);
 
-    let filename = "download";
-    const cd = res.headers.get("Content-Disposition");
-    if (cd) {
-      const match = cd.match(/filename\*=UTF-8''(.+)|filename="?([^";]+)"?/); // naive
-      if (match) filename = decodeURIComponent(match[1] || match[2]);
-    } else {
-      filename = filename.split("/").pop() || "download";
+    if (!res.ok) {
+      toast.error("Download failed: " + res.status);
+      return;
     }
 
-    if (!res.ok) toast.error("Network response not ok");
-    if (!res.body)
-      toast.error("ReadableStream not supported or empty body");
-    const reader = res.body!.getReader();
+    // Construct the desired filename
+    const filename = `${deck.moduleAlt}-${deck.semester}${deck.year}${deck.fileType}`;
 
-    const chunks = [];
-    let received = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      received += value.length;
-    }
+    // Get the file as a blob
+    const blob = await res.blob();
 
-    const blob = new Blob(chunks);
+    // Create a temporary link to trigger download
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -46,5 +34,6 @@ export async function downloadDeck(hash: string) {
     URL.revokeObjectURL(url);
   } catch (err) {
     console.error(err);
+    toast.error("Download failed");
   }
 }

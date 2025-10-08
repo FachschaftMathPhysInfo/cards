@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -20,7 +19,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/FachschaftMathPhysInfo/cards/server/models"
 	"github.com/FachschaftMathPhysInfo/cards/server/utils"
-	anki "github.com/dheidemann/anki-go"
+	"github.com/sirupsen/logrus"
 	"github.com/uptrace/bun"
 )
 
@@ -33,54 +32,46 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, meta models.Deck, fil
 	// generate the hash of the input file
 	fileHash := sha256.New()
 	if _, err := io.Copy(fileHash, tee); err != nil {
-		log.Fatal(err)
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 	encodedHash := hex.EncodeToString(fileHash.Sum(nil))
 	meta.Hash = encodedHash
 
-	// compress input file
-	// this also checks for the correct file type as the init
-	// of the apkg obj will fail if incorrect
-	apkg, err := anki.ReadBytes(buf.Bytes())
-	if err != nil {
-		return "", err
-	}
-	defer apkg.Close()
-
-	compressedApkg, err := apkg.CompressImages(50)
-	if err != nil {
-		log.Printf("unable to compress deck file: %s", err)
-	} else {
-		buf = bytes.NewBuffer(compressedApkg)
-	}
-
 	ext := filepath.Ext(file.Filename)
 	meta.Filetype = ext
+
+	f := false
+	meta.IsValid = &f
 
 	// insert deck
 	if _, err := r.DB.NewInsert().
 		Model(&meta).
 		Exec(ctx); err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	// write file to storage
-	deckfilesPath := "./deckfiles/"
+	deckfilesPath := "./storage/deckfiles/"
 	deckFilename := encodedHash + ext
 	destFile, err := os.Create(deckfilesPath + deckFilename)
 	if err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 	defer destFile.Close()
 
 	_, err = io.Copy(destFile, buf)
 	if err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	err = destFile.Sync()
 	if err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	subject := "Neuer Stapel eingereicht!"
@@ -88,7 +79,7 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, meta models.Deck, fil
 		meta.Module, meta.Examiners, meta.Semester, strconv.Itoa(meta.Year), os.Getenv("API_URL"))
 	err = utils.SendEmail(subject, body)
 	if err != nil {
-		log.Printf("email error: %s", err)
+		logrus.Errorf("Email error: %s", err)
 	}
 
 	return encodedHash, nil
@@ -102,7 +93,8 @@ func (r *mutationResolver) UpdateDeck(ctx context.Context, hash string, meta mod
 		OmitZero().
 		WherePK().
 		Exec(ctx); err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	return hash, nil
@@ -114,19 +106,22 @@ func (r *mutationResolver) DeleteDeck(ctx context.Context, hash string) (string,
 		Model((*models.Deck)(nil)).
 		Where("hash = ?", hash).
 		Exec(ctx); err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	// remove deck from storage
-	deckfilesPath := "./deckfiles/"
+	deckfilesPath := "./storage/deckfiles/"
 	deckfiles, err := filepath.Glob(deckfilesPath + hash + ".*")
 	if err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	err = os.Remove(deckfiles[0])
 	if err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	return hash, nil
@@ -139,7 +134,8 @@ func (r *mutationResolver) SetValid(ctx context.Context, hash string) (string, e
 		Where("hash = ?", hash).
 		Set("is_valid = true").
 		Exec(ctx); err != nil {
-		return "", err
+		logrus.Error(err)
+		return "", fmt.Errorf("Internal Server Error")
 	}
 
 	return hash, nil
@@ -151,7 +147,7 @@ func (r *mutationResolver) Logout(ctx context.Context, token string) (string, er
 		Model((*models.Session)(nil)).
 		Where("token = ?", token).
 		Exec(ctx); err != nil {
-		fmt.Print(err)
+		logrus.Error(err)
 		return "", fmt.Errorf("Internal Server Error")
 	}
 
@@ -188,9 +184,10 @@ func (r *queryResolver) Decks(ctx context.Context, search *string, languages []s
 	}
 
 	if err := query.
-		Order("created_at ASC").
+		OrderExpr("is_valid ASC").
+		OrderExpr("created_at DESC").
 		Scan(ctx); err != nil {
-		fmt.Print(err)
+		logrus.Error(err)
 		return nil, fmt.Errorf("Internal Server Error")
 	}
 
@@ -204,7 +201,7 @@ func (r *queryResolver) IsActiveSession(ctx context.Context, token string) (bool
 		Model(session).
 		Where("token = ?", token).
 		Scan(ctx); err != nil {
-		fmt.Print(err)
+		logrus.Error(err)
 		return false, fmt.Errorf("Internal Server Error")
 	}
 
