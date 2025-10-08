@@ -39,9 +39,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Generate Queries and Mutations
-        run: npm run codegen
-
       - name: Build project
         run: npm run build
 
