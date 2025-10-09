@@ -9,9 +9,12 @@ import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useAuth } from "./providers/auth-provider";
 import { Separator } from "@radix-ui/react-separator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
+  const isMobile = useIsMobile();
+
   return (
     <div className="justify-between z-20 fixed w-screen h-fit flex items-center p-5 dark:bg-black/30 light:bg-white/30 backdrop-blur-md border-b-[1px]">
       <Link href="/" className="flex flex-row items-center gap-x-2">
@@ -23,7 +26,7 @@ export default function Header() {
           sizes="100vw"
           className="h-8 w-auto flex-shrink-0"
         />
-        <p className="text-xl">Stapel</p>
+        {!isMobile && <p className="text-xl">Stapel</p>}
       </Link>
       <div className="flex flex-row gap-x-4 items-center">
         <DeckDialog

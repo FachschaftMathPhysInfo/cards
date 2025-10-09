@@ -20,7 +20,7 @@ import {
   User,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import z from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -208,7 +208,7 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="h-[77vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             Anki Stapel {isEditing ? "bearbeiten" : "einreichen"}
@@ -344,8 +344,11 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
                           placeholder={new Date().getFullYear().toString()}
                           className="w-[85px]"
                           type="number"
-                          maxLength={4}
+                          max={9999}
                           {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
