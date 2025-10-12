@@ -66,6 +66,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 interface DeckDialogProps {
   trigger: React.ReactNode;
@@ -208,7 +209,9 @@ export default function DeckDialog({ trigger, deck }: DeckDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="h-[77vh] overflow-y-auto">
+      <DialogContent
+        className={cn(isEditing ? "h-[52vh]" : "h-[77vh]", "overflow-y-auto")}
+      >
         <DialogHeader>
           <DialogTitle>
             Anki Stapel {isEditing ? "bearbeiten" : "einreichen"}

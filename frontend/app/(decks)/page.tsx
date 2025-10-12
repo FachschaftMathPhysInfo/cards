@@ -97,14 +97,14 @@ export default function Home() {
           filters={languageFilter}
         />
       </div>
-      <div className="flex flex-wrap gap-4 items-start content-start">
+      <div className="flex flex-wrap gap-4">
         {decks?.map(
           (d) =>
             (d.isValid || isAuthenticated) && (
               <Card
                 className={cn(
                   isMobile ? "w-full" : "w-70",
-                  "self-start flex-none"
+                  "flex-none"
                 )}
                 key={d.hash}
               >

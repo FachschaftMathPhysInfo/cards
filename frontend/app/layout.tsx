@@ -1,11 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/header";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { RefetchProvider } from "@/components/providers/refetch-provider";
 import { Suspense } from "react";
 import { Metadata } from "next";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de">
+    <html lang="de" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Suspense>
-          <RefetchProvider>{children}</RefetchProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <RefetchProvider>{children}</RefetchProvider>
+          </ThemeProvider>
         </Suspense>
       </body>
     </html>
