@@ -104,7 +104,7 @@ export default function Home() {
               <Card
                 className={cn(
                   isMobile ? "w-full" : "w-70",
-                  "flex-none"
+                  "justify-between"
                 )}
                 key={d.hash}
               >

@@ -74,9 +74,9 @@ func (r *mutationResolver) CreateDeck(ctx context.Context, meta models.Deck, fil
 		return "", fmt.Errorf("Internal Server Error")
 	}
 
-	subject := "Neuer Stapel eingereicht!"
+	subject := fmt.Sprintf("Neuer Stapel %s eingereicht!", meta.Module)
 	body := fmt.Sprintf("Ein neuer Stapel wurde eingereicht:\n%s bei %s aus dem %s %s.\nBitte zeitnah autoristieren! <3\n%s/login",
-		meta.Module, meta.Examiners, meta.Semester, strconv.Itoa(meta.Year), os.Getenv("API_URL"))
+		meta.Module, meta.Examiners, meta.Semester, strconv.Itoa(meta.Year), os.Getenv("PUBLIC_URL"))
 	err = utils.SendEmail(subject, body)
 	if err != nil {
 		logrus.Errorf("Email error: %s", err)
