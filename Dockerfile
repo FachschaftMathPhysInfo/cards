@@ -16,7 +16,7 @@ RUN npm run build
 ############################################
 # Build the Go GraphQL server
 ############################################
-FROM golang:1.23.0-bullseye AS server-build
+FROM golang:1.24.0-bullseye AS server-build
 
 WORKDIR /go/src
 

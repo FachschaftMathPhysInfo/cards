@@ -18,6 +18,9 @@
 </div>
 
 ## Getting started
+> [!IMPORTANT]
+> The authentication of users is NOT handled by this application. Make sure to secure the `/login` route e.g. on a reverse proxy level
+
 ### Deployment via docker-compose
 ```bash
 services:

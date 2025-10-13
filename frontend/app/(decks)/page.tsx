@@ -1,10 +1,11 @@
 "use client";
 
+import CardSkeleton from "@/components/card-skeleton";
 import DeckDialog from "@/components/dialogs/deck/deck-dialog";
 import { FacetedFilter } from "@/components/faceted-filter";
+import InfoBadge from "@/components/info-badge";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRefetch } from "@/components/providers/refetch-provider";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,6 +48,7 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
   const { refetchKey } = useRefetch();
   const {
+    loading: decksLoading,
     error: decksError,
     data: decksData,
     refetch: decksRefetch,
@@ -98,106 +100,87 @@ export default function Home() {
         />
       </div>
       <div className="flex flex-wrap gap-4">
-        {decks?.map(
-          (d) =>
-            (d.isValid || isAuthenticated) && (
-              <Card
-                className={cn(
-                  isMobile ? "w-full" : "w-70",
-                  "justify-between"
-                )}
-                key={d.hash}
-              >
-                <CardHeader>
-                  <CardTitle>{d.module}</CardTitle>
-                  <CardDescription>{d.subject}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                  <InfoBadge tooltip="Sprache">
-                    <Languages className="size-4" />
-                    <ReactCountryFlag countryCode={d.language} />
-                  </InfoBadge>
-                  <InfoBadge tooltip="Semester">
-                    <Calendar className="size-4" />
-                    {`${d.semester} ${d.year}`}
-                  </InfoBadge>
-                  <InfoBadge tooltip="Modul ALT">
-                    <Library className="size-4" />
-                    {d.moduleAlt}
-                  </InfoBadge>
-                  <InfoBadge tooltip="Dozent/in">
-                    <User className="size-4" />
-                    {d.examiners}
-                  </InfoBadge>
-                </CardContent>
-                <CardFooter>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button onClick={() => downloadDeck(d)}>
-                        <Download />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Stapel herunterladen</TooltipContent>
-                  </Tooltip>
-                  {isAuthenticated && (
-                    <>
-                      <DeckDialog
-                        trigger={
-                          <Button variant="secondary" className="ml-2">
-                            <Edit3 />
-                          </Button>
-                        }
-                        deck={d}
-                      />
-                      {!d.isValid && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              className="ml-auto bg-green-500 hover:bg-green-400"
-                              disabled={setValidLoading}
-                              onClick={() =>
-                                setValid({ variables: { hash: d.hash } })
-                              }
-                            >
-                              {setValidLoading ? <Spinner /> : <Check />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Stapel akzeptieren</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </>
+        {decksLoading ? (
+          <CardSkeleton
+            count={3}
+            className={cn(isMobile ? "w-full" : "w-70")}
+          />
+        ) : (
+          decks?.map(
+            (d) =>
+              (d.isValid || isAuthenticated) && (
+                <Card
+                  className={cn(
+                    isMobile ? "w-full" : "w-70",
+                    "justify-between"
                   )}
-                </CardFooter>
-              </Card>
-            )
+                  key={d.hash}
+                >
+                  <CardHeader>
+                    <CardTitle>{d.module}</CardTitle>
+                    <CardDescription>{d.subject}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-2">
+                    <InfoBadge tooltip="Sprache">
+                      <Languages className="size-4" />
+                      <ReactCountryFlag countryCode={d.language} />
+                    </InfoBadge>
+                    <InfoBadge tooltip="Semester">
+                      <Calendar className="size-4" />
+                      {`${d.semester} ${d.year}`}
+                    </InfoBadge>
+                    <InfoBadge tooltip="Modul ALT">
+                      <Library className="size-4" />
+                      {d.moduleAlt}
+                    </InfoBadge>
+                    <InfoBadge tooltip="Dozent/in">
+                      <User className="size-4" />
+                      {d.examiners}
+                    </InfoBadge>
+                  </CardContent>
+                  <CardFooter>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={() => downloadDeck(d)}>
+                          <Download />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Stapel herunterladen</TooltipContent>
+                    </Tooltip>
+                    {isAuthenticated && (
+                      <>
+                        <DeckDialog
+                          trigger={
+                            <Button variant="secondary" className="ml-2">
+                              <Edit3 />
+                            </Button>
+                          }
+                          deck={d}
+                        />
+                        {!d.isValid && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                className="ml-auto bg-green-500 hover:bg-green-400"
+                                disabled={setValidLoading}
+                                onClick={() =>
+                                  setValid({ variables: { hash: d.hash } })
+                                }
+                              >
+                                {setValidLoading ? <Spinner /> : <Check />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Stapel akzeptieren</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </>
+                    )}
+                  </CardFooter>
+                </Card>
+              )
+          )
         )}
       </div>
     </div>
-  );
-}
-
-interface InfoBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  tooltip: string;
-  children: React.ReactNode;
-  variant?: "secondary" | "outline";
-}
-
-function InfoBadge({
-  tooltip,
-  variant = "secondary",
-  children,
-  className,
-}: InfoBadgeProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild className={className}>
-        <Badge className="gap-x-2" variant={variant ?? "default"}>
-          {children}
-        </Badge>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
   );
 }

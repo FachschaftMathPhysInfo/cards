@@ -10,17 +10,22 @@ export default function Footer() {
   const isDarkMode = theme === "dark";
   return (
     <div className="flex flex-row justify-between border-t-1 p-4 text-sm">
-      <div className="flex flex-row gap-x-4">
-        <Link href={"https://www.stura.uni-heidelberg.de/impressum"}>
-          Impressum
-        </Link>
-        <Link
-          href={
-            "https://www.stura.uni-heidelberg.de/impressum/datenschutzerklaerung/"
-          }
-        >
-          Datenschutz
-        </Link>
+      <div>
+        <div className="flex flex-row gap-x-4 mb-2">
+          <Link href={"https://www.stura.uni-heidelberg.de/impressum"}>
+            Impressum
+          </Link>
+          <Link
+            href={
+              "https://www.stura.uni-heidelberg.de/impressum/datenschutzerklaerung/"
+            }
+          >
+            Datenschutz
+          </Link>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Build v{process.env.NEXT_PUBLIC_APP_VERSION}
+        </p>
       </div>
       <div className="flex flex-row gap-x-4 items-center text-muted-foreground">
         <Label>{isDarkMode ? "Heller Modus" : "Dunkler Modus"}</Label>

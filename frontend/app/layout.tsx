@@ -3,7 +3,6 @@ import "./globals.css";
 import { RefetchProvider } from "@/components/providers/refetch-provider";
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,14 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Suspense>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <RefetchProvider>{children}</RefetchProvider>
-          </ThemeProvider>
+          <RefetchProvider>{children}</RefetchProvider>
         </Suspense>
       </body>
     </html>
