@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -24,10 +24,12 @@ import (
 
 const (
 	defaultPort = "8080"
-	tokenHeader = "TOKEN"
+	tokenHeader = "token"
 )
 
 func main() {
+	isDevelopment := os.Getenv("ENV") == "Development"
+
 	publicUrl := os.Getenv("PUBLIC_URL")
 	if publicUrl == "" {
 		publicUrl = "http://localhost:8080"
@@ -56,9 +58,9 @@ func main() {
 
 	// Set up CORS
 	router.Use(cors.New(cors.Options{
-		AllowedHeaders:   []string{"*"},
+		AllowedHeaders:   []string{tokenHeader},
 		AllowCredentials: true,
-		Debug:            false,
+		Debug:            true,
 	}).Handler)
 
 	// Middleware
@@ -71,7 +73,17 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		http.Redirect(w, r, fmt.Sprintf("%s?token=%s", publicUrl, token), http.StatusFound)
+		http.SetCookie(w, &http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			Expires:  time.Now().Add(7 * 24 * time.Hour),
+			Secure:   !isDevelopment,
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+		})
+
+		http.Redirect(w, r, publicUrl, http.StatusOK)
 	})
 
 	// Serve GraphQL endpoint
@@ -97,7 +109,9 @@ func main() {
 	router.Handle("/*", httputil.NewSingleHostReverseProxy(frontendUrl))
 
 	// Serve GraphQL playground
-	router.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
+	if isDevelopment {
+		router.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
+	}
 
 	log.Printf("Server running on http://localhost:%s", defaultPort)
 	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
