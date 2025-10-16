@@ -1,3 +1,3 @@
-mutation Logout($token: String!) {
-  logout(token: $token)
+mutation Logout {
+  logout
 }

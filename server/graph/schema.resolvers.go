@@ -11,12 +11,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/FachschaftMathPhysInfo/cards/server/middleware"
 	"github.com/FachschaftMathPhysInfo/cards/server/models"
 	"github.com/FachschaftMathPhysInfo/cards/server/utils"
 	"github.com/sirupsen/logrus"
@@ -142,16 +144,28 @@ func (r *mutationResolver) SetValid(ctx context.Context, hash string) (string, e
 }
 
 // Logout is the resolver for the logout field.
-func (r *mutationResolver) Logout(ctx context.Context, token string) (string, error) {
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	token, exists := ctx.Value("token").(string)
+	if !exists {
+		return false, fmt.Errorf("No token provided")
+	}
+
 	if _, err := r.DB.NewDelete().
 		Model((*models.Session)(nil)).
 		Where("token = ?", token).
 		Exec(ctx); err != nil {
 		logrus.Error(err)
-		return "", fmt.Errorf("Internal Server Error")
+		return false, fmt.Errorf("Internal Server Error")
 	}
 
-	return token, nil
+	// Delete token cookie
+	rw := middleware.GetResponseWriter(ctx)
+	http.SetCookie(rw, &http.Cookie{
+		Name:   "token",
+		MaxAge: -1,
+	})
+
+	return true, nil
 }
 
 // Decks is the resolver for the decks field.
@@ -195,23 +209,27 @@ func (r *queryResolver) Decks(ctx context.Context, search *string, languages []s
 }
 
 // IsActiveSession is the resolver for the isActiveSession field.
-func (r *queryResolver) IsActiveSession(ctx context.Context, token string) (bool, error) {
+func (r *queryResolver) IsActiveSession(ctx context.Context) (bool, error) {
+	token, exists := ctx.Value("token").(string)
+	if !exists {
+		return false, nil
+	}
+
 	session := new(models.Session)
 	if err := r.DB.NewSelect().
 		Model(session).
 		Where("token = ?", token).
 		Scan(ctx); err != nil {
-		logrus.Error(err)
-		return false, fmt.Errorf("Internal Server Error")
+		return false, nil
 	}
 
 	if session == nil {
-		return false, fmt.Errorf("No active session found")
+		return false, nil
 	}
 
 	if session.ExpiresAt.Before(time.Now()) {
-		r.Mutation().Logout(ctx, token)
-		return false, fmt.Errorf("Session is expired")
+		r.Mutation().Logout(ctx)
+		return false, nil
 	}
 
 	return true, nil

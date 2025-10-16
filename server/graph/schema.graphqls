@@ -17,7 +17,7 @@ type Deck {
 
 type Query {
   decks(search: String, languages: [String!], semester: String, year: Int): [Deck!]
-  isActiveSession(token: String!): Boolean!
+  isActiveSession: Boolean!
 }
 
 input NewDeck {
@@ -35,5 +35,5 @@ type Mutation {
   updateDeck(hash: String!, meta: NewDeck!): String! @auth
   deleteDeck(hash: String!): String! @auth
   setValid(hash: String!): String! @auth
-  logout(token: String!): String!
+  logout: Boolean! @auth
 }

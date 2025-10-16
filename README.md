@@ -38,7 +38,7 @@ services:
 ### Required for Production environment
 | Key | Description | Example |
 | - | - | - |
-| `PUBLIC_URL` | Domain under which pepp is deployed | `https://stapel.example.com` |
+| `PUBLIC_URL` | Domain under which stapel is deployed | `https://stapel.example.com` |
 | `SMTP_HOST` | E-Mail provider | `smtp.example.com` |
 | `SMTP_USER` | The user to log into the SMTP Server | `alice@example.com` |
 | `SMTP_PASSWORD` | The password to log into the SMTP Server | - |
@@ -69,7 +69,7 @@ npm run dev
 ```bash
 cd server
 go generate ./...
-go run server.go
+ENV=Development go run server.go
 ```
 
 ## Contributions

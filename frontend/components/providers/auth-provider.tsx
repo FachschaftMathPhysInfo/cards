@@ -1,6 +1,5 @@
 "use client";
 
-import { deleteCookie, getCookie, setCookie } from "@/lib/cookie";
 import {
   useIsActiveSessionQuery,
   useLogoutMutation,
@@ -27,38 +26,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | undefined>();
 
-  const { error: sessionError, data: sessionData } = useIsActiveSessionQuery({
-    skip: !token,
-    variables: { token: token! },
-  });
+  const { data: sessionData, refetch: sessionRefetch } =
+    useIsActiveSessionQuery();
 
-  if (sessionError) {
-    toast.error(
-      `Bei der Überprüfung der Session ist ein Fehler aufgetreten: ${sessionError.message}`
-    );
-  }
+  useEffect(() => {
+    if (searchParams.get("l") === "1") {
+      router.push("/");
+      sessionRefetch();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (sessionData) {
       setIsAuthenticated(sessionData.isActiveSession);
-      if (sessionData.isActiveSession) setCookie("token", token!, 7);
     }
   }, [sessionData]);
-
-  useEffect(() => {
-    const tokenCookie = getCookie("token");
-    if (tokenCookie) {
-      setToken(tokenCookie);
-    }
-
-    const tokenSearchParam = searchParams.get("token");
-    if (tokenSearchParam) {
-      setToken(tokenSearchParam);
-      router.push("/");
-    }
-  }, [searchParams]);
 
   const [triggerLogout, { error: logoutError }] = useLogoutMutation();
 
@@ -67,11 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   function logout() {
-    if (!token) return;
-    triggerLogout({ variables: { token: token } });
-    deleteCookie("token");
-    setToken(undefined);
-    setIsAuthenticated(false);
+    triggerLogout();
+    sessionRefetch()
   }
 
   return (
