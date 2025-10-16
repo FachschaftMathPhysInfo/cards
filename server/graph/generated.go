@@ -64,14 +64,14 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateDeck func(childComplexity int, meta models.Deck, file graphql.Upload) int
 		DeleteDeck func(childComplexity int, hash string) int
-		Logout     func(childComplexity int, token string) int
+		Logout     func(childComplexity int) int
 		SetValid   func(childComplexity int, hash string) int
 		UpdateDeck func(childComplexity int, hash string, meta models.Deck) int
 	}
 
 	Query struct {
 		Decks           func(childComplexity int, search *string, languages []string, semester *string, year *int) int
-		IsActiveSession func(childComplexity int, token string) int
+		IsActiveSession func(childComplexity int) int
 	}
 }
 
@@ -80,11 +80,11 @@ type MutationResolver interface {
 	UpdateDeck(ctx context.Context, hash string, meta models.Deck) (string, error)
 	DeleteDeck(ctx context.Context, hash string) (string, error)
 	SetValid(ctx context.Context, hash string) (string, error)
-	Logout(ctx context.Context, token string) (string, error)
+	Logout(ctx context.Context) (bool, error)
 }
 type QueryResolver interface {
 	Decks(ctx context.Context, search *string, languages []string, semester *string, year *int) ([]*models.Deck, error)
-	IsActiveSession(ctx context.Context, token string) (bool, error)
+	IsActiveSession(ctx context.Context) (bool, error)
 }
 
 type executableSchema struct {
@@ -194,12 +194,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Mutation_logout_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.Logout(childComplexity, args["token"].(string)), true
+		return e.complexity.Mutation.Logout(childComplexity), true
 	case "Mutation.setValid":
 		if e.complexity.Mutation.SetValid == nil {
 			break
@@ -239,12 +234,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_isActiveSession_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.IsActiveSession(childComplexity, args["token"].(string)), true
+		return e.complexity.Query.IsActiveSession(childComplexity), true
 
 	}
 	return 0, false
@@ -398,17 +388,6 @@ func (ec *executionContext) field_Mutation_deleteDeck_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_logout_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["token"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_setValid_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -470,17 +449,6 @@ func (ec *executionContext) field_Query_decks_args(ctx context.Context, rawArgs 
 		return nil, err
 	}
 	args["year"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_isActiveSession_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["token"] = arg0
 	return args, nil
 }
 
@@ -1036,36 +1004,37 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 		field,
 		ec.fieldContext_Mutation_logout,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().Logout(ctx, fc.Args["token"].(string))
+			return ec.resolvers.Mutation().Logout(ctx)
 		},
-		nil,
-		ec.marshalNString2string,
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Auth == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive auth is not implemented")
+				}
+				return ec.directives.Auth(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNBoolean2bool,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Mutation_logout(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_logout(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_logout_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -1140,8 +1109,7 @@ func (ec *executionContext) _Query_isActiveSession(ctx context.Context, field gr
 		field,
 		ec.fieldContext_Query_isActiveSession,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().IsActiveSession(ctx, fc.Args["token"].(string))
+			return ec.resolvers.Query().IsActiveSession(ctx)
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -1150,7 +1118,7 @@ func (ec *executionContext) _Query_isActiveSession(ctx context.Context, field gr
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_isActiveSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_isActiveSession(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1159,17 +1127,6 @@ func (ec *executionContext) fieldContext_Query_isActiveSession(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_isActiveSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }

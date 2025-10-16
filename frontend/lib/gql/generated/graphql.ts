@@ -36,7 +36,7 @@ export type Mutation = {
   __typename: 'Mutation';
   createDeck: Scalars['String']['output'];
   deleteDeck: Scalars['String']['output'];
-  logout: Scalars['String']['output'];
+  logout: Scalars['Boolean']['output'];
   setValid: Scalars['String']['output'];
   updateDeck: Scalars['String']['output'];
 };
@@ -51,12 +51,6 @@ export type MutationCreateDeckArgs = {
 export type MutationDeleteDeckArgs = {
   hash: Scalars['String']['input'];
 };
-
-
-export type MutationLogoutArgs = {
-  token: Scalars['String']['input'];
-};
-
 
 export type MutationSetValidArgs = {
   hash: Scalars['String']['input'];
@@ -92,11 +86,6 @@ export type QueryDecksArgs = {
   year?: InputMaybe<Scalars['Int']['input']>;
 };
 
-
-export type QueryIsActiveSessionArgs = {
-  token: Scalars['String']['input'];
-};
-
 export type CreateDeckMutationVariables = Exact<{
   meta: NewDeck;
   file: Scalars['Upload']['input'];
@@ -127,12 +116,10 @@ export type SetValidMutationVariables = Exact<{
 
 export type SetValidMutation = { setValid: string };
 
-export type LogoutMutationVariables = Exact<{
-  token: Scalars['String']['input'];
-}>;
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { logout: string };
+export type LogoutMutation = { logout: boolean };
 
 export type DecksQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
@@ -144,9 +131,7 @@ export type DecksQueryVariables = Exact<{
 
 export type DecksQuery = { decks: Array<{ __typename: 'Deck', subject: string, module: string, moduleAlt: string, examiners: string, language: string, semester: string, year: number, hash: string, fileType: string, isValid: boolean }> | null };
 
-export type IsActiveSessionQueryVariables = Exact<{
-  token: Scalars['String']['input'];
-}>;
+export type IsActiveSessionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type IsActiveSessionQuery = { isActiveSession: boolean };
@@ -177,7 +162,7 @@ export type CreateDeckMutationFn = typeof useCreateDeckMutation
  *   },
  * });
  */
-export function useCreateDeckMutation(baseOptions?: Apollo.MutationFunctionOptions<CreateDeckMutation, CreateDeckMutationVariables>) {
+export function useCreateDeckMutation(baseOptions?: Apollo.MutationHookOptions<CreateDeckMutation, CreateDeckMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useMutation<CreateDeckMutation, CreateDeckMutationVariables>(CreateDeckDocument, options);
       }
@@ -279,8 +264,8 @@ export type SetValidMutationHookResult = ReturnType<typeof useSetValidMutation>;
 export type SetValidMutationResult = Apollo.MutationResult<SetValidMutation>;
 export type SetValidMutationOptions = Apollo.MutationFunctionOptions<SetValidMutation, SetValidMutationVariables>;
 export const LogoutDocument = gql`
-    mutation Logout($token: String!) {
-  logout(token: $token)
+    mutation Logout {
+  logout
 }
     `;
 export type LogoutMutationFn = typeof useLogoutMutation
@@ -298,7 +283,6 @@ export type LogoutMutationFn = typeof useLogoutMutation
  * @example
  * const [logoutMutation, { data, loading, error }] = useLogoutMutation({
  *   variables: {
- *      token: // value for 'token'
  *   },
  * });
  */
@@ -362,8 +346,8 @@ export type DecksLazyQueryHookResult = ReturnType<typeof useDecksLazyQuery>;
 export type DecksSuspenseQueryHookResult = ReturnType<typeof useDecksSuspenseQuery>;
 export type DecksQueryResult = Apollo.QueryResult<DecksQuery, DecksQueryVariables>;
 export const IsActiveSessionDocument = gql`
-    query IsActiveSession($token: String!) {
-  isActiveSession(token: $token)
+    query IsActiveSession {
+  isActiveSession
 }
     `;
 
@@ -379,11 +363,10 @@ export const IsActiveSessionDocument = gql`
  * @example
  * const { data, loading, error } = useIsActiveSessionQuery({
  *   variables: {
- *      token: // value for 'token'
  *   },
  * });
  */
-export function useIsActiveSessionQuery(baseOptions: Apollo.QueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables> & ({ variables: IsActiveSessionQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useIsActiveSessionQuery(baseOptions?: Apollo.QueryHookOptions<IsActiveSessionQuery, IsActiveSessionQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<IsActiveSessionQuery, IsActiveSessionQueryVariables>(IsActiveSessionDocument, options);
       }
