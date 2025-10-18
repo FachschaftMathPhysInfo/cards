@@ -44,7 +44,7 @@ export default function Header() {
         ) : (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link href="/login">
+              <Link prefetch={false} href="/login">
                 <Button variant="ghost">
                   <LogIn />
                 </Button>
