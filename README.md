@@ -30,7 +30,10 @@ services:
       - 8080:8080
     env_file: .env
     volumes:
-      - ./data:/app/storage
+      - data:/app/storage
+
+volumes:
+  data:
 ```
 
 ## Environment Variables
